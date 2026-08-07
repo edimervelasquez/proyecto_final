@@ -2,7 +2,7 @@ import { useState,  } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { LayoutDashboard, PackagePlus, ClipboardList, Scissors, ShieldCheck, LogOut, User } from 'lucide-react';
 
-// Importación de tus componentes creados
+
 import Dashboard from './components/Dashboard';
 import IngresoInsumos from './components/IngresoInsumos';
 import FichaTecnica from './components/FichaTecnica';
@@ -11,7 +11,6 @@ import Calidad from './components/Calidad';
 import Login from './components/Login'; // <-- Nuevo import
 
 export default function App() {
-  // Inicialización directa y limpia
   const [user, setUser] = useState(() => {
     const loggedUser = localStorage.getItem('sies_user');
     return loggedUser ? JSON.parse(loggedUser) : null;
@@ -23,24 +22,24 @@ export default function App() {
     window.location.href = '/';
   };
 
-  // Si no está logueado, se muestra la pantalla de Login de forma obligatoria
+  
   if (!user) {
     return <Login onLoginSuccess={(usuario) => setUser(usuario)} />;
   }
 
   return (
-    // ... Todo el resto de tu código de rutas permanece exactamente igual ...
+    
     <Router>
       <div style={styles.appContainer}>
         
-        {/* SIDEBAR LATERAL DINÁMICO */}
+        
         <aside style={styles.sidebar}>
           <div style={styles.logoArea}>
             <ShieldCheck size={24} color="#ffffff" />
             <h2 style={styles.logoText}>Yullita ERP</h2>
           </div>
 
-          {/* CUADRO INFORMACIÓN DEL USUARIO */}
+          
           <div style={styles.userBadge}>
             <User size={16} color="#9ca3af" />
             <div>
@@ -50,7 +49,7 @@ export default function App() {
           </div>
 
           <nav style={styles.navMenu}>
-            {/* VISTAS EXCLUSIVAS DEL JEFE */}
+            
             {user.rol === 'jefe' && (
               <>
                 <Link to="/" style={styles.navLink}>
@@ -62,7 +61,7 @@ export default function App() {
               </>
             )}
 
-            {/* VISTAS COMUNES / TRABAJADOR */}
+            
             <Link to="/insumos" style={styles.navLink}>
               <PackagePlus size={18} /> Carga Insumos
             </Link>
@@ -74,13 +73,13 @@ export default function App() {
             </Link>
           </nav>
 
-          {/* BOTÓN SALIR SEGURA */}
+          
           <button onClick={handleLogout} style={styles.logoutBtn}>
             <LogOut size={18} /> Cerrar Sesión
           </button>
         </aside>
 
-        {/* CONTENIDO PRINCIPAL */}
+        
         <main style={styles.mainContent}>
           <Routes>
             {user.rol === 'jefe' && (
@@ -92,7 +91,7 @@ export default function App() {
             <Route path="/insumos" element={<IngresoInsumos />} />
             <Route path="/produccion" element={<Produccion />} />
             <Route path="/calidad" element={<Calidad />} />
-            {/* Redirección por defecto si un trabajador intenta forzar la barra del navegador */}
+           
             <Route path="*" element={user.rol === 'jefe' ? <Dashboard /> : <Produccion />} />
           </Routes>
         </main>

@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# === Backend (Python/Flask) ===
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# === Frontend (Node/React) ===
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+dist-ssr/
+
+# === Logs & Editor ===
+*.log
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
