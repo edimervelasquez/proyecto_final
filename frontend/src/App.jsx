@@ -1,116 +1,151 @@
-import { useState,  } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { LayoutDashboard, PackagePlus, ClipboardList, Scissors, ShieldCheck, LogOut, User } from 'lucide-react';
-
-
+import { useState } from 'react';
+import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import Produccion from './components/Produccion';
 import IngresoInsumos from './components/IngresoInsumos';
 import FichaTecnica from './components/FichaTecnica';
-import Produccion from './components/Produccion';
 import Calidad from './components/Calidad';
-import Login from './components/Login'; // <-- Nuevo import
+import GestionEmpleados from './components/GestionEmpleados'; // <- Importar nuevo componente
 
 export default function App() {
-  const [user, setUser] = useState(() => {
-    const loggedUser = localStorage.getItem('sies_user');
-    return loggedUser ? JSON.parse(loggedUser) : null;
-  });
+  const [usuario, setUsuario] = useState(null);
+  const [vistaActual, setVistaActual] = useState('produccion');
 
-  const handleLogout = () => {
-    localStorage.removeItem('sies_user');
-    setUser(null);
-    window.location.href = '/';
+  const handleLoginSuccess = (dataRecibida) => {
+    const datosUsuario = dataRecibida.usuario || dataRecibida;
+    const rolFormateado = (datosUsuario.rol || datosUsuario.nombre_rol || 'trabajador').toString().toLowerCase();
+
+    const usuarioValido = {
+      ...datosUsuario,
+      id_usuario: datosUsuario.id_usuario || datosUsuario.id,
+      empleado: datosUsuario.empleado || datosUsuario.nombre || 'Usuario SIES',
+      correo_usuario: datosUsuario.correo_usuario || datosUsuario.correo,
+      rol: rolFormateado
+    };
+
+    setUsuario(usuarioValido);
+
+    if (rolFormateado === 'jefe' || rolFormateado === 'administrador' || datosUsuario.id_rol === 1) {
+      setVistaActual('dashboard');
+    } else {
+      setVistaActual('produccion');
+    }
   };
 
-  
-  if (!user) {
-    return <Login onLoginSuccess={(usuario) => setUser(usuario)} />;
+  const handleLogout = () => {
+    setUsuario(null);
+    setVistaActual('produccion');
+  };
+
+  if (!usuario) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
+  const esAdministrador = usuario.rol === 'jefe' || usuario.rol === 'administrador' || usuario.id_rol === 1;
+
   return (
-    
-    <Router>
-      <div style={styles.appContainer}>
-        
-        
-        <aside style={styles.sidebar}>
-          <div style={styles.logoArea}>
-            <ShieldCheck size={24} color="#ffffff" />
-            <h2 style={styles.logoText}>Yullita ERP</h2>
-          </div>
-
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f4f6f9', fontFamily: 'sans-serif' }}>
+      
+      {/* SIDEBAR */}
+      <aside style={{ width: '250px', backgroundColor: '#1e293b', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem 1rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#38bdf8', textAlign: 'center' }}>
+            SIES Yullita
+          </h2>
           
-          <div style={styles.userBadge}>
-            <User size={16} color="#9ca3af" />
-            <div>
-              <p style={styles.userName}>{user.nombre}</p>
-              <p style={styles.userRole}>{user.rol.toUpperCase()}</p>
-            </div>
+          <div style={{ marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#334155', borderRadius: '8px', fontSize: '0.85rem' }}>
+            <p style={{ margin: 0, fontWeight: 'bold' }}>{usuario.empleado}</p>
+            <span style={{ display: 'inline-block', marginTop: '0.25rem', padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: esAdministrador ? '#16a34a' : '#2563eb', color: '#fff', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+              {usuario.rol}
+            </span>
           </div>
 
-          <nav style={styles.navMenu}>
-            
-            {user.rol === 'jefe' && (
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {/* Opciones exclusivas del Jefe/Administrador */}
+            {esAdministrador && (
               <>
-                <Link to="/" style={styles.navLink}>
-                  <LayoutDashboard size={18} /> Dashboard
-                </Link>
-                <Link to="/ficha-tecnica" style={styles.navLink}>
-                  <Scissors size={18} /> Ficha Técnica
-                </Link>
+                <button
+                  onClick={() => setVistaActual('dashboard')}
+                  style={{
+                    textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                    backgroundColor: vistaActual === 'dashboard' ? '#0284c7' : 'transparent', color: '#fff'
+                  }}
+                >
+                  📊 Dashboard
+                </button>
+
+                <button
+                  onClick={() => setVistaActual('empleados')}
+                  style={{
+                    textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                    backgroundColor: vistaActual === 'empleados' ? '#0284c7' : 'transparent', color: '#fff'
+                  }}
+                >
+                  👥 Empleados
+                </button>
               </>
             )}
 
-            
-            <Link to="/insumos" style={styles.navLink}>
-              <PackagePlus size={18} /> Carga Insumos
-            </Link>
-            <Link to="/produccion" style={styles.navLink}>
-              <ClipboardList size={18} /> Orden Producción
-            </Link>
-            <Link to="/calidad" style={styles.navLink}>
-              <ShieldCheck size={18} /> Control Calidad
-            </Link>
+            <button
+              onClick={() => setVistaActual('produccion')}
+              style={{
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                backgroundColor: vistaActual === 'produccion' ? '#0284c7' : 'transparent', color: '#fff'
+              }}
+            >
+              🧵 Producción
+            </button>
+
+            <button
+              onClick={() => setVistaActual('insumos')}
+              style={{
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                backgroundColor: vistaActual === 'insumos' ? '#0284c7' : 'transparent', color: '#fff'
+              }}
+            >
+              📦 Ingreso Insumos
+            </button>
+
+            <button
+              onClick={() => setVistaActual('ficha')}
+              style={{
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                backgroundColor: vistaActual === 'ficha' ? '#0284c7' : 'transparent', color: '#fff'
+              }}
+            >
+              📋 Ficha Técnica
+            </button>
+
+            <button
+              onClick={() => setVistaActual('calidad')}
+              style={{
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                backgroundColor: vistaActual === 'calidad' ? '#0284c7' : 'transparent', color: '#fff'
+              }}
+            >
+              ✅ Control Calidad
+            </button>
           </nav>
+        </div>
 
-          
-          <button onClick={handleLogout} style={styles.logoutBtn}>
-            <LogOut size={18} /> Cerrar Sesión
-          </button>
-        </aside>
+        <button
+          onClick={handleLogout}
+          style={{ width: '100%', padding: '0.75rem', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+        >
+          🚪 Cerrar Sesión
+        </button>
+      </aside>
 
-        
-        <main style={styles.mainContent}>
-          <Routes>
-            {user.rol === 'jefe' && (
-              <>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/ficha-tecnica" element={<FichaTecnica />} />
-              </>
-            )}
-            <Route path="/insumos" element={<IngresoInsumos />} />
-            <Route path="/produccion" element={<Produccion />} />
-            <Route path="/calidad" element={<Calidad />} />
-           
-            <Route path="*" element={user.rol === 'jefe' ? <Dashboard /> : <Produccion />} />
-          </Routes>
-        </main>
+      {/* CONTENIDO PRINCIPAL */}
+      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+        {vistaActual === 'dashboard' && esAdministrador && <Dashboard usuario={usuario} onLogout={handleLogout} />}
+        {vistaActual === 'empleados' && esAdministrador && <GestionEmpleados />}
+        {vistaActual === 'produccion' && <Produccion usuario={usuario} />}
+        {vistaActual === 'insumos' && <IngresoInsumos usuario={usuario} />}
+        {vistaActual === 'ficha' && <FichaTecnica usuario={usuario} />}
+        {vistaActual === 'calidad' && <Calidad usuario={usuario} />}
+      </main>
 
-      </div>
-    </Router>
+    </div>
   );
 }
-
-const styles = {
-  appContainer: { display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#f9fafb' },
-  sidebar: { width: '260px', backgroundColor: '#1e293b', color: '#ffffff', padding: '20px', display: 'flex', flexDirection: 'column' },
-  logoArea: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #334155', paddingBottom: '15px' },
-  logoText: { fontSize: '18px', fontWeight: 'bold', margin: 0 },
-  userBadge: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '20px' },
-  userName: { fontSize: '13px', fontWeight: 'bold', margin: 0, color: '#f3f4f6' },
-  userRole: { fontSize: '11px', color: '#10b981', margin: 0, fontWeight: 'bold' },
-  navMenu: { display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 },
-  navLink: { display: 'flex', alignItems: 'center', gap: '12px', color: '#cbd5e1', textDecoration: 'none', padding: '12px', borderRadius: '6px', fontSize: '14px', transition: 'background 0.2s' },
-  logoutBtn: { display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: 'transparent', border: 'none', color: '#f87171', padding: '12px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', textAlign: 'left', marginTop: 'auto' },
-  mainContent: { flexGrow: 1, padding: '40px', overflowY: 'auto' }
-};
