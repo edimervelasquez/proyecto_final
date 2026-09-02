@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import Produccion from './components/Produccion';
-import IngresoInsumos from './components/IngresoInsumos';
-import FichaTecnica from './components/FichaTecnica';
-import Calidad from './components/Calidad';
-import GestionEmpleados from './components/GestionEmpleados'; // <- Importar nuevo componente
+import Login from './views/Login';
+import Dashboard from './views/Dashboard';
+import Produccion from './views/Produccion';
+import IngresoInsumos from './views/IngresoInsumos';
+import FichaTecnica from './views/FichaTecnica';
+import Calidad from './views/Calidad';
+import GestionEmpleados from './views/GestionEmpleados'; // <- Importar nuevo componente
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);

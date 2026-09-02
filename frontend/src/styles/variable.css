@@ -1,0 +1,24 @@
+:root {
+  /* Paleta Dark Premium (Negro y Dorado) */
+  --bg-main: #0a0a0a;          /* Negro profundo de fondo */
+  --bg-card: #121212;          /* Negro suave para tarjetas */
+  --bg-input: #1a1a1a;         /* Gris oscuro para inputs */
+  
+  /* Gradiente y Tonos Dorados */
+  --gold-primary: #d4af37;     /* Dorado clásico */
+  --gold-light: #f3e5ab;       /* Dorado claro para brillos */
+  --gold-hover: #b89628;       /* Dorado oscuro para interactividad */
+  --gold-gradient: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #aa7c11 100%);
+
+  /* Textos */
+  --text-primary: #f8fafc;     /* Blanco puro */
+  --text-secondary: #a1a1aa;   /* Gris medio */
+  --text-gold: #eab308;        /* Texto de acento */
+
+  /* Bordes, Sombras y Brillos */
+  --border-gold: rgba(212, 175, 55, 0.3);
+  --border-gold-focus: #d4af37;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow-gold: 0 0 25px rgba(212, 175, 55, 0.15);
+}

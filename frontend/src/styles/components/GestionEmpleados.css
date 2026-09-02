@@ -1,0 +1,133 @@
+/* --- ACCIONES Y BARRA SUPERIOR --- */
+.empleados-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  width: 100%;
+  max-width: 350px;
+  transition: border-color 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: #f59e0b;
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  margin-left: 0.5rem;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.btn-add-empleado {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-add-empleado:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+/* --- TABLA DE EMPLEADOS --- */
+.table-container {
+  background-color: #121212;
+  border: 1.5px solid #d4af37;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.1);
+}
+
+.empleados-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.empleados-table th {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  background-color: #18181b;
+  color: #f59e0b;
+  padding: 1rem;
+  font-size: 0.95rem;
+  border-bottom: 1.5px solid rgba(212, 175, 55, 0.3);
+}
+
+.empleados-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #1f2937;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.empleados-table tr:hover {
+  background-color: #1a1a1e;
+}
+
+/* Badges de Estado */
+.badge-empleado {
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-empleado.activo {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  border: 1px solid #22c55e;
+}
+
+.badge-empleado.inactivo {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid #ef4444;
+}
+
+/* Acciones */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-icon.edit { color: #f59e0b; }
+.btn-icon.edit:hover { background-color: rgba(245, 158, 11, 0.2); }
+
+.btn-icon.delete { color: #ef4444; }
+.btn-icon.delete:hover { background-color: rgba(239, 68, 68, 0.2); }
