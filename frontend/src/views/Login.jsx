@@ -36,9 +36,10 @@ export default function Login({ onLoginSuccess }) {
         localStorage.setItem('sies_user', JSON.stringify(usuarioValido));
         onLoginSuccess(usuarioValido);
       } else {
-        setMensaje({ texto: data.mensaje || 'Credenciales incorrectas.', tipo: 'error' });
+        setMensaje({ texto: data.error || data.mensaje || 'Credenciales incorrectas.', tipo: 'error' });
       }
     } catch (err) {
+      console.error("Error al iniciar sesión:", err);
       setMensaje({ texto: 'Error de conexión con el servidor Flask.', tipo: 'error' });
     }
   };
@@ -56,13 +57,14 @@ export default function Login({ onLoginSuccess }) {
       const data = await res.json();
 
       if (res.ok) {
-        setMensaje({ texto: '¡Usuario creado con éxito! Ya puedes iniciar sesión.', tipo: 'exito' });
+        setMensaje({ texto: data.mensaje || '¡Usuario creado con éxito! Ya puedes iniciar sesión.', tipo: 'exito' });
         setEsRegistro(false);
         setLoginData({ correo_usuario: registroData.correo_usuario, contrasenia_usuario: '' });
       } else {
-        setMensaje({ texto: data.mensaje || 'Error al registrar usuario.', tipo: 'error' });
+        setMensaje({ texto: data.error || data.mensaje || 'Error al registrar usuario.', tipo: 'error' });
       }
     } catch (err) {
+      console.error("Error al registrar usuario:", err);
       setMensaje({ texto: 'Error de conexión con el servidor Flask.', tipo: 'error' });
     }
   };

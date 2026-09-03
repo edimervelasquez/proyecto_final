@@ -7,23 +7,39 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 @auth_bp.route('/registrar', methods=['POST'])
 def registrar_usuario():
-    data = request.get_json() or {}
+    # silent=True evita que Flask falle de inmediato si el body no trae formato JSON
+    data = request.get_json(silent=True) or {}
     
-    empleado = data.get('empleado')
-    correo = data.get('correo_usuario')
-    contrasenia = data.get('contrasenia_usuario')
-    cedula = data.get('cedula_usuario')
+    # Depuración en la terminal para inspeccionar la petición recibida
+    print("\n--- DEPURACIÓN PETICIÓN REGISTRO ---")
+    print("Headers Content-Type:", request.headers.get('Content-Type'))
+    print("Payload recibido:", data)
+    print("------------------------------------\n")
+
+    # Mapeo flexible: soporta llaves del modelo y de React
+    empleado = data.get('empleado') or data.get('nombre') or data.get('nombre_completo')
+    correo = data.get('correo_usuario') or data.get('correo') or data.get('email')
+    contrasenia = data.get('contrasenia_usuario') or data.get('contrasena') or data.get('password')
+    cedula = data.get('cedula_usuario') or data.get('cedula') or data.get('documento')
     id_rol = data.get('id_rol', 3)
     
+    # Validar que ningún campo requerimiento sea nulo/vacío
     if not empleado or not correo or not contrasenia or not cedula:
-        return jsonify({"error": "Todos los campos son obligatorios"}), 400
+        return jsonify({
+            "error": "Todos los campos son obligatorios",
+            "recibido": {
+                "empleado": empleado,
+                "correo": correo,
+                "contrasenia": bool(contrasenia),
+                "cedula": cedula
+            }
+        }), 400
         
     try:
         existe = Usuario.query.filter_by(correo_usuario=correo).first()
         if existe:
             return jsonify({"error": "El correo ya se encuentra registrado"}), 400
             
-        # Hash seguro para la contraseña
         hashed_pw = generate_password_hash(contrasenia)
 
         nuevo_usuario = Usuario(
@@ -45,9 +61,9 @@ def registrar_usuario():
 
 @auth_bp.route('/login', methods=['POST'])
 def login_usuario():
-    data = request.get_json() or {}
-    correo = data.get('correo_usuario')
-    contrasenia = data.get('contrasenia_usuario')
+    data = request.get_json(silent=True) or {}
+    correo = data.get('correo_usuario') or data.get('correo') or data.get('email')
+    contrasenia = data.get('contrasenia_usuario') or data.get('contrasena') or data.get('password')
     
     if not correo or not contrasenia:
         return jsonify({"error": "Por favor, ingrese correo y contraseña."}), 400
@@ -55,7 +71,6 @@ def login_usuario():
     try:
         user = Usuario.query.filter_by(correo_usuario=correo).first()
         
-        # Soporta contraseñas encriptadas con hash y texto plano previo
         password_valida = False
         if user:
             if user.contrasenia_usuario.startswith(('pbkdf2:', 'scrypt:')):
@@ -66,7 +81,6 @@ def login_usuario():
         if user and password_valida:
             rol_nombre = "jefe" if user.id_rol == 1 else "trabajador"
             
-            # Retornamos llaves unificadas (empleado y nombre) para evitar undefined en React
             return jsonify({
                 "mensaje": "Acceso concedido",
                 "usuario": {
@@ -86,7 +100,7 @@ def login_usuario():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# RUTA PARA OBTENER TODOS LOS EMPLEADOS (Solo para Jefe/Admin)
+
 @auth_bp.route('/usuarios', methods=['GET'])
 def obtener_usuarios():
     try:
@@ -108,7 +122,6 @@ def obtener_usuarios():
         return jsonify({"error": str(e)}), 500
 
 
-# RUTA PARA ELIMINAR UN EMPLEADO POR ID
 @auth_bp.route('/usuarios/<int:id_usuario>', methods=['DELETE'])
 def eliminar_usuario(id_usuario):
     try:
@@ -116,7 +129,6 @@ def eliminar_usuario(id_usuario):
         if not user:
             return jsonify({"error": "Usuario no encontrado"}), 404
             
-        # Evitar que el administrador se elimine a sí mismo si es id_rol == 1
         if user.id_rol == 1:
             return jsonify({"error": "No se puede eliminar la cuenta de Administrador principal"}), 400
 
