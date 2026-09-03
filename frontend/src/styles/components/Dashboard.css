@@ -1,194 +1,250 @@
+/* --- RESET Y BASE DEL DASHBOARD --- */
+:root, body, #root {
+  background-color: #050505 !important;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Layout principal en Flexbox para abarcar 100% de alto y ancho */
 .dashboard-layout {
-  display: flex;
+  width: 100%;
   min-height: 100vh;
   background-color: #050505;
-  color: #f3f4f6;
-  font-family: system-ui, -apple-system, sans-serif;
-}
-
-/* --- BARRA LATERAL (SIDEBAR) --- */
-.sidebar {
-  width: 260px;
-  background-color: #121212;
-  border-right: 1.5px solid rgba(212, 175, 55, 0.3);
+  color: #ffffff;
+  padding: 1.5rem 2rem;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 1.5rem 1rem;
-  transition: transform 0.3s ease;
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-}
-
-.sidebar-header h2 {
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #f59e0b;
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.8rem 1rem;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: #9ca3af;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-  color: #ffffff;
-  background-color: #1f2937;
-}
-
-.nav-item.active {
-  color: #000000;
-  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-}
-
-.btn-logout {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem 1rem;
-  background-color: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  border-radius: 8px;
-  color: #fca5a5;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-logout:hover {
-  background-color: rgba(239, 68, 68, 0.3);
-  color: #ffffff;
-}
-
-/* --- ÁREA PRINCIPAL --- */
-.main-content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
 }
 
+/* --- BARRA SUPERIOR (TOP BAR) --- */
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 2rem;
-  background-color: #121212;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #1f2937;
 }
 
 .top-bar h1 {
   font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 1.5rem;
   color: #f59e0b;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .user-badge {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #1f2937;
-  border: 1px solid #374151;
+  background-color: #121212;
+  border: 1px solid #d4af37;
   padding: 0.5rem 1rem;
   border-radius: 20px;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: #e5e7eb;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
 }
 
+/* --- ÁREA DE CONTENIDO PRINCIPAL --- */
 .content-body {
-  padding: 2rem;
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1; /* Esto hace que ocupe todo el alto disponible */
+  width: 100%;
 }
 
-/* Tarjetas de Métricas Resumen */
+/* Estilos para que los módulos hijos y sus tablas llenen el contenedor */
+.module-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+}
+
+.table-wrapper {
+  width: 100%;
+  flex: 1; /* La tabla se expande verticalmente hacia abajo */
+  overflow-x: auto;
+  border: 1px solid #d4af37;
+  border-radius: 12px;
+  background-color: #121212;
+}
+
+/* --- MÉTRICAS DE RESUMEN --- */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1.25rem;
 }
 
 .metric-card {
   background-color: #121212;
-  border: 1.5px solid #d4af37;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.1);
+  border: 1px solid #374151;
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  border-color: #d4af37;
 }
 
 .metric-icon {
-  background-color: #1f2937;
+  background-color: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
-  padding: 0.85rem;
-  border-radius: 10px;
+  padding: 0.75rem;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .metric-info h3 {
+  margin: 0;
   font-size: 0.85rem;
   color: #9ca3af;
-  margin-bottom: 0.25rem;
+  font-weight: 500;
 }
 
 .metric-info p {
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  margin: 0.2rem 0 0 0;
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #ffffff;
 }
 
-/* Panel Vacío de Contenido */
+/* --- MÓDULO RESUMEN OPERATIVO Y ALERTAS --- */
 .module-placeholder {
-  background-color: #121212;
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
-  color: #9ca3af;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  background-color: transparent;
+  border: none;
+  padding: 0;
 }
 
-/* Adaptabilidad Responsiva */
-@media (max-width: 768px) {
-  .dashboard-layout {
-    flex-direction: column;
+@media (max-width: 900px) {
+  .module-placeholder {
+    grid-template-columns: 1fr;
   }
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1.5px solid rgba(212, 175, 55, 0.3);
-  }
+}
+
+.dashboard-widget {
+  background-color: #121212;
+  border: 1.5px solid #d4af37;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.dashboard-widget h3 {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: #f59e0b;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 0.5rem;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #1f2937;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+/* --- ESTILOS NEGRO/DORADO PARA EL SIDEBAR --- */
+aside, 
+div[class*="sidebar"], 
+.sidebar {
+  background-color: #121212 !important;
+  border-right: 1.5px solid #d4af37 !important;
+}
+
+aside h2, 
+.sidebar h2, 
+div[class*="sidebar"] h2 {
+  color: #f59e0b !important;
+  font-family: Georgia, 'Times New Roman', Times, serif !important;
+}
+
+div[class*="user"], 
+div[class*="profile"], 
+aside div[class*="card"] {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+}
+
+aside button, 
+.sidebar button, 
+div[class*="sidebar"] button,
+.sidebar-nav button,
+aside nav a,
+aside nav button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+  padding: 0.75rem 1rem !important;
+  margin-bottom: 0.6rem !important;
+  background-color: #18181b !important;
+  border: 1px solid #374151 !important;
+  border-radius: 8px !important;
+  color: #e5e7eb !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+aside button:hover, 
+.sidebar button:hover, 
+div[class*="sidebar"] button:hover {
+  border-color: #f59e0b !important;
+  background-color: #27272a !important;
+  transform: translateX(3px) !important;
+}
+
+aside button[class*="active"], 
+.sidebar button[class*="active"], 
+div[class*="sidebar"] button[class*="active"] {
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%) !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+  border: 1px solid #d4af37 !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35) !important;
+}
+
+button[class*="logout"], 
+button[class*="cerrar"], 
+.btn-logout {
+  background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #f87171 !important;
 }

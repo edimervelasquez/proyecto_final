@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Login from './views/Login';
 import Dashboard from './views/Dashboard';
 import Produccion from './views/Produccion';
 import IngresoInsumos from './views/IngresoInsumos';
 import FichaTecnica from './views/FichaTecnica';
 import Calidad from './views/Calidad';
-import GestionEmpleados from './views/GestionEmpleados'; // <- Importar nuevo componente
+import GestionEmpleados from './views/GestionEmpleados';
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
@@ -44,31 +44,54 @@ export default function App() {
   const esAdministrador = usuario.rol === 'jefe' || usuario.rol === 'administrador' || usuario.id_rol === 1;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f4f6f9', fontFamily: 'sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#050505', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       
-      {/* SIDEBAR */}
-      <aside style={{ width: '250px', backgroundColor: '#1e293b', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem 1rem' }}>
+      {/* SIDEBAR NEGRO/DORADO */}
+      <aside style={{ 
+        width: '260px', 
+        backgroundColor: '#121212', 
+        color: '#ffffff', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justify: 'space-between', 
+        padding: '1.5rem 1rem',
+        borderRight: '1px solid #d4af37',
+        boxSizing: 'border-box'
+      }}>
         <div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#38bdf8', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#f59e0b', textAlign: 'center', fontFamily: 'Georgia, serif' }}>
             SIES Yullita
           </h2>
           
-          <div style={{ marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#334155', borderRadius: '8px', fontSize: '0.85rem' }}>
-            <p style={{ margin: 0, fontWeight: 'bold' }}>{usuario.empleado}</p>
-            <span style={{ display: 'inline-block', marginTop: '0.25rem', padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: esAdministrador ? '#16a34a' : '#2563eb', color: '#fff', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+          <div style={{ marginBottom: '1.5rem', padding: '0.85rem', backgroundColor: '#18181b', borderRadius: '8px', border: '1px solid #374151', fontSize: '0.85rem' }}>
+            <p style={{ margin: 0, fontWeight: 'bold', color: '#ffffff' }}>{usuario.empleado}</p>
+            <span style={{ 
+              display: 'inline-block', 
+              marginTop: '0.35rem', 
+              padding: '0.2rem 0.6rem', 
+              borderRadius: '4px', 
+              backgroundColor: esAdministrador ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
+              color: esAdministrador ? '#f59e0b' : '#60a5fa', 
+              border: `1px solid ${esAdministrador ? '#f59e0b' : '#3b82f6'}`,
+              fontSize: '0.75rem', 
+              fontWeight: 'bold',
+              textTransform: 'uppercase' 
+            }}>
               {usuario.rol}
             </span>
           </div>
 
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {/* Opciones exclusivas del Jefe/Administrador */}
             {esAdministrador && (
               <>
                 <button
                   onClick={() => setVistaActual('dashboard')}
                   style={{
-                    textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-                    backgroundColor: vistaActual === 'dashboard' ? '#0284c7' : 'transparent', color: '#fff'
+                    textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+                    borderColor: vistaActual === 'dashboard' ? '#d4af37' : 'transparent',
+                    backgroundColor: vistaActual === 'dashboard' ? '#f59e0b' : 'transparent', 
+                    color: vistaActual === 'dashboard' ? '#000000' : '#e5e7eb',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   📊 Dashboard
@@ -77,8 +100,11 @@ export default function App() {
                 <button
                   onClick={() => setVistaActual('empleados')}
                   style={{
-                    textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-                    backgroundColor: vistaActual === 'empleados' ? '#0284c7' : 'transparent', color: '#fff'
+                    textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+                    borderColor: vistaActual === 'empleados' ? '#d4af37' : 'transparent',
+                    backgroundColor: vistaActual === 'empleados' ? '#f59e0b' : 'transparent', 
+                    color: vistaActual === 'empleados' ? '#000000' : '#e5e7eb',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   👥 Empleados
@@ -89,8 +115,11 @@ export default function App() {
             <button
               onClick={() => setVistaActual('produccion')}
               style={{
-                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-                backgroundColor: vistaActual === 'produccion' ? '#0284c7' : 'transparent', color: '#fff'
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+                borderColor: vistaActual === 'produccion' ? '#d4af37' : 'transparent',
+                backgroundColor: vistaActual === 'produccion' ? '#f59e0b' : 'transparent', 
+                color: vistaActual === 'produccion' ? '#000000' : '#e5e7eb',
+                transition: 'all 0.2s ease'
               }}
             >
               🧵 Producción
@@ -99,8 +128,11 @@ export default function App() {
             <button
               onClick={() => setVistaActual('insumos')}
               style={{
-                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-                backgroundColor: vistaActual === 'insumos' ? '#0284c7' : 'transparent', color: '#fff'
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+                borderColor: vistaActual === 'insumos' ? '#d4af37' : 'transparent',
+                backgroundColor: vistaActual === 'insumos' ? '#f59e0b' : 'transparent', 
+                color: vistaActual === 'insumos' ? '#000000' : '#e5e7eb',
+                transition: 'all 0.2s ease'
               }}
             >
               📦 Ingreso Insumos
@@ -109,8 +141,11 @@ export default function App() {
             <button
               onClick={() => setVistaActual('ficha')}
               style={{
-                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-                backgroundColor: vistaActual === 'ficha' ? '#0284c7' : 'transparent', color: '#fff'
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+                borderColor: vistaActual === 'ficha' ? '#d4af37' : 'transparent',
+                backgroundColor: vistaActual === 'ficha' ? '#f59e0b' : 'transparent', 
+                color: vistaActual === 'ficha' ? '#000000' : '#e5e7eb',
+                transition: 'all 0.2s ease'
               }}
             >
               📋 Ficha Técnica
@@ -119,8 +154,11 @@ export default function App() {
             <button
               onClick={() => setVistaActual('calidad')}
               style={{
-                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-                backgroundColor: vistaActual === 'calidad' ? '#0284c7' : 'transparent', color: '#fff'
+                textAlign: 'left', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+                borderColor: vistaActual === 'calidad' ? '#d4af37' : 'transparent',
+                backgroundColor: vistaActual === 'calidad' ? '#f59e0b' : 'transparent', 
+                color: vistaActual === 'calidad' ? '#000000' : '#e5e7eb',
+                transition: 'all 0.2s ease'
               }}
             >
               ✅ Control Calidad
@@ -130,21 +168,32 @@ export default function App() {
 
         <button
           onClick={handleLogout}
-          style={{ width: '100%', padding: '0.75rem', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+          style={{ 
+            width: '100%', 
+            padding: '0.75rem', 
+            background: 'linear-gradient(135deg, #991b1b 0%, #ef4444 100%)', 
+            color: '#ffffff', 
+            border: '1px solid #f87171', 
+            borderRadius: '8px', 
+            fontWeight: 'bold', 
+            cursor: 'pointer' 
+          }}
         >
           🚪 Cerrar Sesión
         </button>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
-        {vistaActual === 'dashboard' && esAdministrador && <Dashboard usuario={usuario} onLogout={handleLogout} />}
-        {vistaActual === 'empleados' && esAdministrador && <GestionEmpleados />}
-        {vistaActual === 'produccion' && <Produccion usuario={usuario} />}
-        {vistaActual === 'insumos' && <IngresoInsumos usuario={usuario} />}
-        {vistaActual === 'ficha' && <FichaTecnica usuario={usuario} />}
-        {vistaActual === 'calidad' && <Calidad usuario={usuario} />}
-      </main>
+      {/* CONTENIDO PRINCIPAL CON FORZADO DE ALTURA */}
+  <main style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#050505', minHeight: '100vh', width: '100%' }}>
+  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+    {vistaActual === 'dashboard' && esAdministrador && <Dashboard user={usuario} />}
+    {vistaActual === 'empleados' && esAdministrador && <GestionEmpleados usuario={usuario} />}
+    {vistaActual === 'produccion' && <Produccion usuario={usuario} />}
+    {vistaActual === 'insumos' && <IngresoInsumos usuario={usuario} />}
+    {vistaActual === 'ficha' && <FichaTecnica usuario={usuario} />}
+    {vistaActual === 'calidad' && <Calidad usuario={usuario} />}
+  </div>
+</main>
 
     </div>
   );
