@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Plus, Search, Edit2, Trash2, X, Scissors } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X } from 'lucide-react';
 import '../styles/components/Produccion.css';
 
 export default function Produccion() {
   const [busqueda, setBusqueda] = useState('');
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [ordenEditarId, setOrdenEditarId] = useState(null);
 
   // Datos de prueba iniciales
   const [ordenes, setOrdenes] = useState([
@@ -13,7 +15,7 @@ export default function Produccion() {
     { id: 3, OP: 'OP-2026-03', prenda: 'Chaqueta Denim', cantidad: 120, fechaEntrega: '2026-09-05', estado: 'Finalizado' },
   ]);
 
-  const [nuevaOrden, setNuevaOrden] = useState({
+  const [formOrden, setFormOrden] = useState({
     OP: '',
     prenda: '',
     cantidad: '',
@@ -21,11 +23,48 @@ export default function Produccion() {
     estado: 'Corte'
   });
 
+  // Abrir modal para Crear
+  const handleAbrirCrear = () => {
+    setModoEdicion(false);
+    setOrdenEditarId(null);
+    setFormOrden({ OP: '', prenda: '', cantidad: '', fechaEntrega: '', estado: 'Corte' });
+    setModalAbierto(true);
+  };
+
+  // Abrir modal para Editar
+  const handleAbrirEditar = (item) => {
+    setModoEdicion(true);
+    setOrdenEditarId(item.id);
+    setFormOrden({
+      OP: item.OP,
+      prenda: item.prenda,
+      cantidad: item.cantidad,
+      fechaEntrega: item.fechaEntrega,
+      estado: item.estado
+    });
+    setModalAbierto(true);
+  };
+
+  // Función para Eliminar
+  const handleEliminar = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar esta orden de producción?")) {
+      setOrdenes(ordenes.filter(item => item.id !== id));
+    }
+  };
+
+  // Guardar (Crear o Actualizar)
   const handleGuardar = (e) => {
     e.preventDefault();
-    setOrdenes([...ordenes, { ...nuevaOrden, id: Date.now() }]);
+
+    if (modoEdicion) {
+      setOrdenes(ordenes.map(item => 
+        item.id === ordenEditarId ? { ...formOrden, id: ordenEditarId } : item
+      ));
+    } else {
+      setOrdenes([...ordenes, { ...formOrden, id: Date.now() }]);
+    }
+
     setModalAbierto(false);
-    setNuevaOrden({ OP: '', prenda: '', cantidad: '', fechaEntrega: '', estado: 'Corte' });
   };
 
   const ordenesFiltradas = ordenes.filter(o => 
@@ -47,7 +86,7 @@ export default function Produccion() {
           />
         </div>
 
-        <button className="btn-add-orden" onClick={() => setModalAbierto(true)}>
+        <button className="btn-add-orden" onClick={handleAbrirCrear}>
           <Plus size={18} />
           Nueva Orden de Producción
         </button>
@@ -80,8 +119,20 @@ export default function Produccion() {
                 </td>
                 <td>
                   <div className="action-buttons">
-                    <button className="btn-icon edit"><Edit2 size={16} /></button>
-                    <button className="btn-icon delete"><Trash2 size={16} /></button>
+                    <button 
+                      className="btn-icon edit"
+                      onClick={() => handleAbrirEditar(item)}
+                      title="Editar Orden"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button 
+                      className="btn-icon delete"
+                      onClick={() => handleEliminar(item.id)}
+                      title="Eliminar Orden"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -90,12 +141,12 @@ export default function Produccion() {
         </table>
       </div>
 
-      {/* MODAL REGISTRAR ORDEN DE PRODUCCIÓN */}
+      {/* MODAL REGISTRAR / EDITAR ORDEN DE PRODUCCIÓN */}
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-card">
             <div className="modal-header">
-              <h3>Registrar Orden de Producción</h3>
+              <h3>{modoEdicion ? 'Editar Orden de Producción' : 'Registrar Orden de Producción'}</h3>
               <button className="btn-icon" onClick={() => setModalAbierto(false)}>
                 <X size={20} color="#9ca3af" />
               </button>
@@ -109,8 +160,8 @@ export default function Produccion() {
                     type="text" 
                     required 
                     placeholder="Ej: OP-2026-04"
-                    value={nuevaOrden.OP}
-                    onChange={(e) => setNuevaOrden({...nuevaOrden, OP: e.target.value})}
+                    value={formOrden.OP}
+                    onChange={(e) => setFormOrden({...formOrden, OP: e.target.value})}
                   />
                 </div>
               </div>
@@ -122,8 +173,8 @@ export default function Produccion() {
                     type="text" 
                     required 
                     placeholder="Ej: Pantalón Cargo Beige"
-                    value={nuevaOrden.prenda}
-                    onChange={(e) => setNuevaOrden({...nuevaOrden, prenda: e.target.value})}
+                    value={formOrden.prenda}
+                    onChange={(e) => setFormOrden({...formOrden, prenda: e.target.value})}
                   />
                 </div>
               </div>
@@ -136,8 +187,8 @@ export default function Produccion() {
                       type="number" 
                       required 
                       placeholder="0"
-                      value={nuevaOrden.cantidad}
-                      onChange={(e) => setNuevaOrden({...nuevaOrden, cantidad: e.target.value})}
+                      value={formOrden.cantidad}
+                      onChange={(e) => setFormOrden({...formOrden, cantidad: e.target.value})}
                     />
                   </div>
                 </div>
@@ -148,8 +199,8 @@ export default function Produccion() {
                     <input 
                       type="date" 
                       required
-                      value={nuevaOrden.fechaEntrega}
-                      onChange={(e) => setNuevaOrden({...nuevaOrden, fechaEntrega: e.target.value})}
+                      value={formOrden.fechaEntrega}
+                      onChange={(e) => setFormOrden({...formOrden, fechaEntrega: e.target.value})}
                     />
                   </div>
                 </div>
@@ -158,8 +209,8 @@ export default function Produccion() {
               <div className="form-group">
                 <label>Estado del Proceso</label>
                 <select 
-                  value={nuevaOrden.estado}
-                  onChange={(e) => setNuevaOrden({...nuevaOrden, estado: e.target.value})}
+                  value={formOrden.estado}
+                  onChange={(e) => setFormOrden({...formOrden, estado: e.target.value})}
                 >
                   <option value="Corte">En Corte</option>
                   <option value="Confeccion">En Confección</option>
@@ -172,7 +223,7 @@ export default function Produccion() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-add-orden">
-                  Crear Orden
+                  {modoEdicion ? 'Actualizar Orden' : 'Crear Orden'}
                 </button>
               </div>
             </form>

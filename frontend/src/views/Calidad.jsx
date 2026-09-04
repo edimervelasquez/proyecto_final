@@ -5,6 +5,8 @@ import '../styles/components/Calidad.css';
 export default function Calidad() {
   const [busqueda, setBusqueda] = useState('');
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [reporteEditarId, setReporteEditarId] = useState(null);
 
   // Datos de prueba iniciales
   const [reportes, setReportes] = useState([
@@ -13,7 +15,7 @@ export default function Calidad() {
     { id: 3, OP: 'OP-2026-03', inspector: 'Carlos Ruiz', auditadas: 30, defectuosas: 0, estado: 'Pendiente' },
   ]);
 
-  const [nuevoReporte, setNuevoReporte] = useState({
+  const [formReporte, setFormReporte] = useState({
     OP: '',
     inspector: '',
     auditadas: '',
@@ -21,11 +23,48 @@ export default function Calidad() {
     estado: 'Aprobado'
   });
 
+  // Abrir modal para Crear
+  const handleAbrirCrear = () => {
+    setModoEdicion(false);
+    setReporteEditarId(null);
+    setFormReporte({ OP: '', inspector: '', auditadas: '', defectuosas: '', estado: 'Aprobado' });
+    setModalAbierto(true);
+  };
+
+  // Abrir modal para Editar
+  const handleAbrirEditar = (item) => {
+    setModoEdicion(true);
+    setReporteEditarId(item.id);
+    setFormReporte({
+      OP: item.OP,
+      inspector: item.inspector,
+      auditadas: item.auditadas,
+      defectuosas: item.defectuosas,
+      estado: item.estado
+    });
+    setModalAbierto(true);
+  };
+
+  // Función para Eliminar
+  const handleEliminar = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este reporte de calidad?")) {
+      setReportes(reportes.filter(item => item.id !== id));
+    }
+  };
+
+  // Guardar (Crear o Actualizar)
   const handleGuardar = (e) => {
     e.preventDefault();
-    setReportes([...reportes, { ...nuevoReporte, id: Date.now() }]);
+
+    if (modoEdicion) {
+      setReportes(reportes.map(item => 
+        item.id === reporteEditarId ? { ...formReporte, id: reporteEditarId } : item
+      ));
+    } else {
+      setReportes([...reportes, { ...formReporte, id: Date.now() }]);
+    }
+
     setModalAbierto(false);
-    setNuevoReporte({ OP: '', inspector: '', auditadas: '', defectuosas: '', estado: 'Aprobado' });
   };
 
   const reportesFiltrados = reportes.filter(r => 
@@ -47,7 +86,7 @@ export default function Calidad() {
           />
         </div>
 
-        <button className="btn-add-auditoria" onClick={() => setModalAbierto(true)}>
+        <button className="btn-add-auditoria" onClick={handleAbrirCrear}>
           <Plus size={18} />
           Nueva Auditoría
         </button>
@@ -80,8 +119,20 @@ export default function Calidad() {
                 </td>
                 <td>
                   <div className="action-buttons">
-                    <button className="btn-icon edit"><Edit2 size={16} /></button>
-                    <button className="btn-icon delete"><Trash2 size={16} /></button>
+                    <button 
+                      className="btn-icon edit"
+                      onClick={() => handleAbrirEditar(item)}
+                      title="Editar Reporte"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button 
+                      className="btn-icon delete"
+                      onClick={() => handleEliminar(item.id)}
+                      title="Eliminar Reporte"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -90,12 +141,12 @@ export default function Calidad() {
         </table>
       </div>
 
-      {/* MODAL REGISTRAR AUDITORÍA */}
+      {/* MODAL REGISTRAR / EDITAR AUDITORÍA */}
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-card">
             <div className="modal-header">
-              <h3>Registrar Inspección de Calidad</h3>
+              <h3>{modoEdicion ? 'Editar Inspección de Calidad' : 'Registrar Inspección de Calidad'}</h3>
               <button className="btn-icon" onClick={() => setModalAbierto(false)}>
                 <X size={20} color="#9ca3af" />
               </button>
@@ -109,8 +160,8 @@ export default function Calidad() {
                     type="text" 
                     required 
                     placeholder="Ej: OP-2026-04"
-                    value={nuevoReporte.OP}
-                    onChange={(e) => setNuevoReporte({...nuevoReporte, OP: e.target.value})}
+                    value={formReporte.OP}
+                    onChange={(e) => setFormReporte({...formReporte, OP: e.target.value})}
                   />
                 </div>
               </div>
@@ -122,8 +173,8 @@ export default function Calidad() {
                     type="text" 
                     required 
                     placeholder="Nombre del auditor"
-                    value={nuevoReporte.inspector}
-                    onChange={(e) => setNuevoReporte({...nuevoReporte, inspector: e.target.value})}
+                    value={formReporte.inspector}
+                    onChange={(e) => setFormReporte({...formReporte, inspector: e.target.value})}
                   />
                 </div>
               </div>
@@ -136,8 +187,8 @@ export default function Calidad() {
                       type="number" 
                       required 
                       placeholder="Ej: 50"
-                      value={nuevoReporte.auditadas}
-                      onChange={(e) => setNuevoReporte({...nuevoReporte, auditadas: e.target.value})}
+                      value={formReporte.auditadas}
+                      onChange={(e) => setFormReporte({...formReporte, auditadas: e.target.value})}
                     />
                   </div>
                 </div>
@@ -149,8 +200,8 @@ export default function Calidad() {
                       type="number" 
                       required 
                       placeholder="0"
-                      value={nuevoReporte.defectuosas}
-                      onChange={(e) => setNuevoReporte({...nuevoReporte, defectuosas: e.target.value})}
+                      value={formReporte.defectuosas}
+                      onChange={(e) => setFormReporte({...formReporte, defectuosas: e.target.value})}
                     />
                   </div>
                 </div>
@@ -159,8 +210,8 @@ export default function Calidad() {
               <div className="form-group">
                 <label>Dictamen Final</label>
                 <select 
-                  value={nuevoReporte.estado}
-                  onChange={(e) => setNuevoReporte({...nuevoReporte, estado: e.target.value})}
+                  value={formReporte.estado}
+                  onChange={(e) => setFormReporte({...formReporte, estado: e.target.value})}
                 >
                   <option value="Aprobado">Aprobado</option>
                   <option value="Rechazado">Rechazado</option>
@@ -173,7 +224,7 @@ export default function Calidad() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-add-auditoria">
-                  Guardar Reporte
+                  {modoEdicion ? 'Actualizar Reporte' : 'Guardar Reporte'}
                 </button>
               </div>
             </form>

@@ -5,6 +5,8 @@ import '../styles/components/GestionEmpleados.css';
 export default function GestionEmpleados() {
   const [busqueda, setBusqueda] = useState('');
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [empleadoEditarId, setEmpleadoEditarId] = useState(null);
 
   // Datos de prueba iniciales
   const [empleados, setEmpleados] = useState([
@@ -13,7 +15,7 @@ export default function GestionEmpleados() {
     { id: 3, documento: '1055443322', nombre: 'Andres Cepeda', cargo: 'Confeccionista', telefono: '3155544332', estado: 'Inactivo' },
   ]);
 
-  const [nuevoEmpleado, setNuevoEmpleado] = useState({
+  const [formEmpleado, setFormEmpleado] = useState({
     documento: '',
     nombre: '',
     cargo: 'Operario de Corte',
@@ -21,11 +23,50 @@ export default function GestionEmpleados() {
     estado: 'Activo'
   });
 
+  // Abrir modal en modo Crear
+  const handleAbrirCrear = () => {
+    setModoEdicion(false);
+    setEmpleadoEditarId(null);
+    setFormEmpleado({ documento: '', nombre: '', cargo: 'Operario de Corte', telefono: '', estado: 'Activo' });
+    setModalAbierto(true);
+  };
+
+  // Abrir modal en modo Editar con los datos del registro cargados
+  const handleAbrirEditar = (emp) => {
+    setModoEdicion(true);
+    setEmpleadoEditarId(emp.id);
+    setFormEmpleado({
+      documento: emp.documento,
+      nombre: emp.nombre,
+      cargo: emp.cargo,
+      telefono: emp.telefono,
+      estado: emp.estado
+    });
+    setModalAbierto(true);
+  };
+
+  // Función para Eliminar un registro
+  const handleEliminar = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este empleado?")) {
+      setEmpleados(empleados.filter(item => item.id !== id));
+    }
+  };
+
+  // Guardar (Crear o Actualizar)
   const handleGuardar = (e) => {
     e.preventDefault();
-    setEmpleados([...empleados, { ...nuevoEmpleado, id: Date.now() }]);
+
+    if (modoEdicion) {
+      // Actualizar empleado existente
+      setEmpleados(empleados.map(item => 
+        item.id === empleadoEditarId ? { ...formEmpleado, id: empleadoEditarId } : item
+      ));
+    } else {
+      // Crear nuevo empleado
+      setEmpleados([...empleados, { ...formEmpleado, id: Date.now() }]);
+    }
+
     setModalAbierto(false);
-    setNuevoEmpleado({ documento: '', nombre: '', cargo: 'Operario de Corte', telefono: '', estado: 'Activo' });
   };
 
   const empleadosFiltrados = empleados.filter(e => 
@@ -48,7 +89,7 @@ export default function GestionEmpleados() {
           />
         </div>
 
-        <button className="btn-add-empleado" onClick={() => setModalAbierto(true)}>
+        <button className="btn-add-empleado" onClick={handleAbrirCrear}>
           <UserPlus size={18} />
           Nuevo Empleado
         </button>
@@ -81,8 +122,20 @@ export default function GestionEmpleados() {
                 </td>
                 <td>
                   <div className="action-buttons">
-                    <button className="btn-icon edit"><Edit2 size={16} /></button>
-                    <button className="btn-icon delete"><Trash2 size={16} /></button>
+                    <button 
+                      className="btn-icon edit" 
+                      onClick={() => handleAbrirEditar(item)}
+                      title="Editar"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button 
+                      className="btn-icon delete" 
+                      onClick={() => handleEliminar(item.id)}
+                      title="Eliminar"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -91,12 +144,12 @@ export default function GestionEmpleados() {
         </table>
       </div>
 
-      {/* MODAL REGISTRAR EMPLEADO */}
+      {/* MODAL REGISTRAR / EDITAR EMPLEADO */}
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-card">
             <div className="modal-header">
-              <h3>Registrar Nuevo Empleado</h3>
+              <h3>{modoEdicion ? 'Editar Empleado' : 'Registrar Nuevo Empleado'}</h3>
               <button className="btn-icon" onClick={() => setModalAbierto(false)}>
                 <X size={20} color="#9ca3af" />
               </button>
@@ -110,8 +163,8 @@ export default function GestionEmpleados() {
                     type="text" 
                     required 
                     placeholder="Ej: 1012345678"
-                    value={nuevoEmpleado.documento}
-                    onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, documento: e.target.value})}
+                    value={formEmpleado.documento}
+                    onChange={(e) => setFormEmpleado({...formEmpleado, documento: e.target.value})}
                   />
                 </div>
               </div>
@@ -123,8 +176,8 @@ export default function GestionEmpleados() {
                     type="text" 
                     required 
                     placeholder="Ej: Juan Perez"
-                    value={nuevoEmpleado.nombre}
-                    onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, nombre: e.target.value})}
+                    value={formEmpleado.nombre}
+                    onChange={(e) => setFormEmpleado({...formEmpleado, nombre: e.target.value})}
                   />
                 </div>
               </div>
@@ -137,8 +190,8 @@ export default function GestionEmpleados() {
                       type="text" 
                       required 
                       placeholder="Ej: 3001234567"
-                      value={nuevoEmpleado.telefono}
-                      onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, telefono: e.target.value})}
+                      value={formEmpleado.telefono}
+                      onChange={(e) => setFormEmpleado({...formEmpleado, telefono: e.target.value})}
                     />
                   </div>
                 </div>
@@ -146,8 +199,8 @@ export default function GestionEmpleados() {
                 <div className="form-group">
                   <label>Estado</label>
                   <select 
-                    value={nuevoEmpleado.estado}
-                    onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, estado: e.target.value})}
+                    value={formEmpleado.estado}
+                    onChange={(e) => setFormEmpleado({...formEmpleado, estado: e.target.value})}
                   >
                     <option value="Activo">Activo</option>
                     <option value="Inactivo">Inactivo</option>
@@ -158,8 +211,8 @@ export default function GestionEmpleados() {
               <div className="form-group">
                 <label>Cargo</label>
                 <select 
-                  value={nuevoEmpleado.cargo}
-                  onChange={(e) => setNuevoEmpleado({...nuevoEmpleado, cargo: e.target.value})}
+                  value={formEmpleado.cargo}
+                  onChange={(e) => setFormEmpleado({...formEmpleado, cargo: e.target.value})}
                 >
                   <option value="Operario de Corte">Operario de Corte</option>
                   <option value="Confeccionista">Confeccionista</option>
@@ -173,7 +226,7 @@ export default function GestionEmpleados() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-add-empleado">
-                  Guardar Empleado
+                  {modoEdicion ? 'Actualizar Empleado' : 'Guardar Empleado'}
                 </button>
               </div>
             </form>
