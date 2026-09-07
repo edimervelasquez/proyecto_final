@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+New-Item -Path "src\hooks\useUsuarios.js" -ItemType File -Value @"
+import { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import TablaEmpleados from '../components/TablaEmpleados';
-import '../styles/GestionEmpleados.css';
 
-const GestionEmpleados = () => {
+export const useUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
   const [cargando, setCargando] = useState(false);
@@ -15,7 +14,7 @@ const GestionEmpleados = () => {
       if (Array.isArray(data)) setUsuarios(data);
       else setMensaje({ texto: data.error || 'Error al cargar usuarios', tipo: 'error' });
     } catch (err) {
-      setMensaje({ texto: 'Error de conexión', tipo: 'error' });
+      setMensaje({ texto: 'Error de conexión con el servidor', tipo: 'error' });
     } finally {
       setCargando(false);
     }
@@ -30,6 +29,8 @@ const GestionEmpleados = () => {
     if (res.mensaje) {
       setMensaje({ texto: res.mensaje, tipo: 'exito' });
       cargarUsuarios();
+    } else {
+      setMensaje({ texto: res.error, tipo: 'error' });
     }
   };
 
@@ -39,27 +40,11 @@ const GestionEmpleados = () => {
       if (res.mensaje) {
         setMensaje({ texto: res.mensaje, tipo: 'exito' });
         cargarUsuarios();
+      } else {
+        setMensaje({ texto: res.error, tipo: 'error' });
       }
     }
   };
 
-  return (
-    <div className="gestion-container">
-      <h2>Gestión y Aprobación de Empleados</h2>
-
-      {mensaje.texto && <div className={`alerta ${mensaje.tipo}`}>{mensaje.texto}</div>}
-
-      {cargando ? (
-        <p>Cargando empleados...</p>
-      ) : (
-        <TablaEmpleados
-          usuarios={usuarios}
-          onCambiarEstado={cambiarEstado}
-          onEliminar={eliminarUsuario}
-        />
-      )}
-    </div>
-  );
+  return { usuarios, mensaje, cargando, cambiarEstado, eliminarUsuario };
 };
-
-export default GestionEmpleados;

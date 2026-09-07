@@ -7,8 +7,7 @@ import {
   TrendingUp, 
   DollarSign 
 } from 'lucide-react';
-import '../styles/components/Dashboard.css';
-
+import "../styles/Dashboard.css";
 export default function Dashboard() {
   // Se remueve 'setDatos' para corregir la advertencia de ESLint
   const [datos] = useState({

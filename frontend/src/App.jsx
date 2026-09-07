@@ -1,3 +1,5 @@
+import './styles/variable.css';
+import './styles/global.css';
 import React, { useState } from 'react';
 import Login from './views/Login';
 import Dashboard from './views/Dashboard';
@@ -6,6 +8,7 @@ import IngresoInsumos from './views/IngresoInsumos';
 import FichaTecnica from './views/FichaTecnica';
 import Calidad from './views/Calidad';
 import GestionEmpleados from './views/GestionEmpleados';
+
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);

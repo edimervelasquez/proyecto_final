@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ShieldCheck, Mail, Lock, User, CreditCard } from 'lucide-react';
-import '../styles/components/Login.css';
-
+import "../styles/Login.css";
 export default function Login({ onLoginSuccess }) {
   const [esRegistro, setEsRegistro] = useState(false);
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });

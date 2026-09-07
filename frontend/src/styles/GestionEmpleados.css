@@ -1,0 +1,59 @@
+/* Estilos para botones de acciones en la tabla */
+.acciones-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-accion {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-accion:hover {
+  opacity: 0.85;
+}
+
+.btn-aprobar {
+  background-color: #2e7d32;
+  color: #ffffff;
+}
+
+.btn-desactivar {
+  background-color: #d84315;
+  color: #ffffff;
+}
+
+.btn-reactivar {
+  background-color: #0288d1;
+  color: #ffffff;
+}
+
+.btn-eliminar {
+  background-color: #c62828;
+  color: #ffffff;
+}
+
+.badge-estado {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.badge-estado.aprobado {
+  color: #4caf50;
+}
+
+.badge-estado.pendiente {
+  color: #ffb74d;
+}
+
+.badge-estado.inactivo {
+  color: #ef5350;
+}

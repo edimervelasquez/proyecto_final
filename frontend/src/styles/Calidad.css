@@ -137,3 +137,118 @@
 
 .btn-icon.delete { color: #ef4444; }
 .btn-icon.delete:hover { background-color: rgba(239, 68, 68, 0.2); }
+
+.view-container {
+  padding: 1.5rem;
+  color: #e0e0e0;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.75rem;
+}
+
+.badge-modulo {
+  background: #2a2a2a;
+  color: #f59e0b;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid #f59e0b44;
+}
+
+.form-card {
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.form-card-header h3 {
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.form-card-header p {
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  color: #d4d4d8;
+  font-weight: 500;
+}
+
+.input-group input {
+  background: #09090b;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input:focus {
+  border-color: #f59e0b;
+}
+
+.form-actions-right {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.btn-sies-primary {
+  background: #f59e0b;
+  color: #000000;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-sies-primary:hover {
+  background: #d97706;
+}
+
+.alerta-sies {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.alerta-sies.exito {
+  background: #064e3b;
+  color: #6ee7b7;
+  border: 1px solid #047857;
+}
+
+.alerta-sies.error {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #dc2626;
+}

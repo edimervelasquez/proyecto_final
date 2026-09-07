@@ -47,12 +47,13 @@ def registrar_usuario():
             correo_usuario=correo,
             contrasenia_usuario=hashed_pw,
             cedula_usuario=cedula,
-            id_rol=id_rol
+            id_rol=id_rol,
+            estado='PENDIENTE'  # El nuevo usuario queda pendiente de aprobación
         )
         
         db.session.add(nuevo_usuario)
         db.session.commit()
-        return jsonify({"mensaje": f"¡Trabajador {empleado} registrado exitosamente!"}), 201
+        return jsonify({"mensaje": f"¡Trabajador {empleado} registrado exitosamente! Espera la aprobación del administrador."}), 201
         
     except Exception as e:
         db.session.rollback()
@@ -79,6 +80,13 @@ def login_usuario():
                 password_valida = (user.contrasenia_usuario == contrasenia)
 
         if user and password_valida:
+            # Validar estados de verificación y acceso del empleado
+            if getattr(user, 'estado', 'PENDIENTE') == 'PENDIENTE':
+                return jsonify({"error": "Tu cuenta está pendiente de aprobación por el administrador."}), 403
+            
+            if getattr(user, 'estado', '') == 'INACTIVO':
+                return jsonify({"error": "Tu cuenta se encuentra inactiva."}), 403
+
             rol_nombre = "jefe" if user.id_rol == 1 else "trabajador"
             
             return jsonify({
@@ -91,7 +99,8 @@ def login_usuario():
                     "correo": user.correo_usuario,
                     "correo_usuario": user.correo_usuario,
                     "rol": rol_nombre,
-                    "id_rol": user.id_rol
+                    "id_rol": user.id_rol,
+                    "estado": user.estado
                 }
             }), 200
             
@@ -115,10 +124,32 @@ def obtener_usuarios():
                 "correo": u.correo_usuario,
                 "cedula": u.cedula_usuario,
                 "rol": rol_nombre,
-                "id_rol": u.id_rol
+                "id_rol": u.id_rol,
+                "estado": getattr(u, 'estado', 'PENDIENTE')
             })
         return jsonify(resultado), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@auth_bp.route('/usuarios/<int:id_usuario>/estado', methods=['PUT'])
+def cambiar_estado_usuario(id_usuario):
+    data = request.get_json(silent=True) or {}
+    nuevo_estado = (data.get('estado') or '').upper()
+
+    if nuevo_estado not in ['PENDIENTE', 'APROBADO', 'INACTIVO']:
+        return jsonify({"error": "Estado no válido. Use 'PENDIENTE', 'APROBADO' o 'INACTIVO'."}), 400
+
+    try:
+        user = Usuario.query.get(id_usuario)
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        user.estado = nuevo_estado
+        db.session.commit()
+        return jsonify({"mensaje": f"Estado del usuario actualizado a {nuevo_estado}"}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 

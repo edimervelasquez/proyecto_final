@@ -13,7 +13,7 @@ class Usuario(db.Model):
     correo_usuario = db.Column(db.String(100), unique=True, nullable=False)
     cedula_usuario = db.Column(db.String(20), nullable=False)
     id_rol = db.Column(db.Integer, db.ForeignKey('rol.id_rol'), nullable=False)
-
+    estado = db.Column(db.String(20), default='PENDIENTE')
 class MateriaPrima(db.Model):
     __tablename__ = 'materia_prima'
     id_materiaPrima = db.Column(db.Integer, primary_key=True)
