@@ -4,3 +4,4 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'clave_secreta_sies_yullita'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:123456@localhost/yullita_creaciones'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    //prueba cambio
