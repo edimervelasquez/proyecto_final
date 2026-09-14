@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from backend.models import Produccion
+from backend.models.models import Produccion
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/api/dashboard')
 

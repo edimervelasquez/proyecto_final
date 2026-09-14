@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { ShieldCheck, Mail, Lock, User, CreditCard } from 'lucide-react';
 import "../styles/Login.css";
+
 export default function Login({ onLoginSuccess }) {
   const [esRegistro, setEsRegistro] = useState(false);
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
 
   const [loginData, setLoginData] = useState({
-    correo_usuario: '',
-    contrasenia_usuario: ''
+    correo: '',
+    contrasenia: ''
   });
 
   const [registroData, setRegistroData] = useState({
     empleado: '',
-    correo_usuario: '',
-    contrasenia_usuario: '',
-    cedula_usuario: '',
+    correo: '',
+    contrasenia: '',
+    cedula: '',
     id_rol: 3
   });
 
@@ -23,7 +24,7 @@ export default function Login({ onLoginSuccess }) {
     setMensaje({ texto: '', tipo: '' });
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/auth/login', {
+      const res = await fetch('http://127.0.0.1:8000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData)
@@ -35,11 +36,11 @@ export default function Login({ onLoginSuccess }) {
         localStorage.setItem('sies_user', JSON.stringify(usuarioValido));
         onLoginSuccess(usuarioValido);
       } else {
-        setMensaje({ texto: data.error || data.mensaje || 'Credenciales incorrectas.', tipo: 'error' });
+        setMensaje({ texto: data.detail || data.error || data.mensaje || 'Credenciales incorrectas.', tipo: 'error' });
       }
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
-      setMensaje({ texto: 'Error de conexión con el servidor Flask.', tipo: 'error' });
+      setMensaje({ texto: 'Error de conexión con el servidor FastAPI.', tipo: 'error' });
     }
   };
 
@@ -48,7 +49,7 @@ export default function Login({ onLoginSuccess }) {
     setMensaje({ texto: '', tipo: '' });
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/auth/registrar', {
+      const res = await fetch('http://127.0.0.1:8000/api/auth/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registroData)
@@ -58,13 +59,13 @@ export default function Login({ onLoginSuccess }) {
       if (res.ok) {
         setMensaje({ texto: data.mensaje || '¡Usuario creado con éxito! Ya puedes iniciar sesión.', tipo: 'exito' });
         setEsRegistro(false);
-        setLoginData({ correo_usuario: registroData.correo_usuario, contrasenia_usuario: '' });
+        setLoginData({ correo: registroData.correo, contrasenia: '' });
       } else {
-        setMensaje({ texto: data.error || data.mensaje || 'Error al registrar usuario.', tipo: 'error' });
+        setMensaje({ texto: data.detail || data.error || data.mensaje || 'Error al registrar usuario.', tipo: 'error' });
       }
     } catch (err) {
       console.error("Error al registrar usuario:", err);
-      setMensaje({ texto: 'Error de conexión con el servidor Flask.', tipo: 'error' });
+      setMensaje({ texto: 'Error de conexión con el servidor FastAPI.', tipo: 'error' });
     }
   };
 
@@ -127,8 +128,8 @@ export default function Login({ onLoginSuccess }) {
                     type="email"
                     required
                     placeholder="ejemplo@yuyita.com"
-                    value={loginData.correo_usuario}
-                    onChange={(e) => setLoginData({ ...loginData, correo_usuario: e.target.value })}
+                    value={loginData.correo}
+                    onChange={(e) => setLoginData({ ...loginData, correo: e.target.value })}
                   />
                 </div>
               </div>
@@ -141,8 +142,8 @@ export default function Login({ onLoginSuccess }) {
                     type="password"
                     required
                     placeholder="••••••••"
-                    value={loginData.contrasenia_usuario}
-                    onChange={(e) => setLoginData({ ...loginData, contrasenia_usuario: e.target.value })}
+                    value={loginData.contrasenia}
+                    onChange={(e) => setLoginData({ ...loginData, contrasenia: e.target.value })}
                   />
                 </div>
               </div>
@@ -175,8 +176,8 @@ export default function Login({ onLoginSuccess }) {
                     type="text"
                     required
                     placeholder="Ej: 1018222333"
-                    value={registroData.cedula_usuario}
-                    onChange={(e) => setRegistroData({ ...registroData, cedula_usuario: e.target.value })}
+                    value={registroData.cedula}
+                    onChange={(e) => setRegistroData({ ...registroData, cedula: e.target.value })}
                   />
                 </div>
               </div>
@@ -189,8 +190,8 @@ export default function Login({ onLoginSuccess }) {
                     type="email"
                     required
                     placeholder="carlos@gmail.com"
-                    value={registroData.correo_usuario}
-                    onChange={(e) => setRegistroData({ ...registroData, correo_usuario: e.target.value })}
+                    value={registroData.correo}
+                    onChange={(e) => setRegistroData({ ...registroData, correo: e.target.value })}
                   />
                 </div>
               </div>
@@ -203,8 +204,8 @@ export default function Login({ onLoginSuccess }) {
                     type="password"
                     required
                     placeholder="••••••••"
-                    value={registroData.contrasenia_usuario}
-                    onChange={(e) => setRegistroData({ ...registroData, contrasenia_usuario: e.target.value })}
+                    value={registroData.contrasenia}
+                    onChange={(e) => setRegistroData({ ...registroData, contrasenia: e.target.value })}
                   />
                 </div>
               </div>

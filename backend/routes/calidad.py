@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from backend.database import db
-from backend.models import Produccion, ProgramacionUsuario
+from backend.models.models import Produccion, ProgramacionUsuario
 
 calidad_bp = Blueprint('calidad', __name__, url_prefix='/api/produccion/calidad')
 
