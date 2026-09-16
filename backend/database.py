@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 # Reemplaza la URL por la cadena de conexión real de tu proyecto.
 # Si usas MySQL (XAMPP/Workbench) sería algo así:
 # SQLALCHEMY_DATABASE_URL = "mysql+pymysql://usuario:contraseña@localhost/creaciones_yuyita"
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:79604257@localhost/yullita_creaciones_db" # Ejemplo temporal con SQLite
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:123456@localhost/yullita_creaciones_db" # Ejemplo temporal con SQLite
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,

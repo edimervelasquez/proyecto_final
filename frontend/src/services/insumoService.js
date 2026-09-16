@@ -1,21 +1,13 @@
-const API_URL = 'http://127.0.0.1:5000/api';
+import { request } from './httpClient';
 
 export const insumoService = {
-  registrarIngreso: async (ingresoData) => {
-    const res = await fetch(`${API_URL}/insumos/ingreso`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ingresoData)
-    });
-    return await res.json();
-  },
+  registrarIngreso: (ingresoData) => request('/insumos/ingreso', {
+    method: 'POST',
+    body: JSON.stringify(ingresoData),
+  }),
 
-  crearFichaTecnica: async (fichaData) => {
-    const res = await fetch(`${API_URL}/ficha-tecnica`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(fichaData)
-    });
-    return await res.json();
-  }
+  crearFichaTecnica: (fichaData) => request('/insumos/ficha-tecnica', {
+    method: 'POST',
+    body: JSON.stringify(fichaData),
+  }),
 };

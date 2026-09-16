@@ -1,42 +1,24 @@
-const API_URL = 'http://127.0.0.1:8000/api/auth';
+import { request } from './httpClient';
 
 export const authService = {
-  login: async (credentials) => {
-    const res = await fetch(`${API_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials)
-    });
-    return await res.json();
-  },
+  login: (credentials) => request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  }),
 
-  registrar: async (userData) => {
-    const res = await fetch(`${API_URL}/registrar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData)
-    });
-    return await res.json();
-  },
+  registrar: (userData) => request('/auth/registrar', {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  }),
 
-  obtenerUsuarios: async () => {
-    const res = await fetch(`${API_URL}/usuarios`);
-    return await res.json();
-  },
+  obtenerUsuarios: () => request('/auth/usuarios'),
 
-  cambiarEstado: async (id_usuario, estado) => {
-    const res = await fetch(`${API_URL}/usuarios/${id_usuario}/estado`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estado })
-    });
-    return await res.json();
-  },
+  cambiarEstado: (idUsuario, estado) => request(`/auth/usuarios/${idUsuario}/estado`, {
+    method: 'PUT',
+    body: JSON.stringify({ estado }),
+  }),
 
-  eliminarUsuario: async (id_usuario) => {
-    const res = await fetch(`${API_URL}/usuarios/${id_usuario}`, {
-      method: 'DELETE'
-    });
-    return await res.json();
-  }
+  eliminarUsuario: (idUsuario) => request(`/auth/usuarios/${idUsuario}`, {
+    method: 'DELETE',
+  }),
 };

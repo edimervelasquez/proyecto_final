@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from backend.repositories.auth_repository import AuthRepository
 from backend.models.models import Rol  # <-- 1. Importamos el modelo Rol
+from backend.security import create_access_token
 
 class AuthService:
 
@@ -21,6 +22,8 @@ class AuthService:
 
         return {
             "mensaje": "Inicio de sesión exitoso.",
+            "access_token": create_access_token(usuario.id_usuario, nombre_rol),
+            "token_type": "bearer",
             "usuario": {
                 "id_usuario": usuario.id_usuario,
                 "empleado": usuario.empleado,
