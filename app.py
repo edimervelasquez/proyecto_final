@@ -3,11 +3,11 @@ from flask_cors import CORS
 from backend.config import Config
 from backend.database import db
 
-from backend.routes.auth import auth_bp
-from backend.routes.insumos import insumos_bp
-from backend.routes.produccion import produccion_bp
-from backend.routes.calidad import calidad_bp
-from backend.routes.dashboard import dashboard_bp
+from backend.routes.auth_routes import auth_bp
+from backend.routes.insumos_routes import insumos_bp
+from backend.routes.produccion_routes import produccion_bp
+from backend.routes.calidad_routes import calidad_bp
+from backend.routes.dashboard_routes import dashboard_bp
 
 def create_app():
     app = Flask(__name__)

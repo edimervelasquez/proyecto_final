@@ -29,3 +29,102 @@ input, select, textarea {
 input:focus, select:focus {
   border-color: var(--primary-accent);
 }
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: #050505;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.app-sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1rem;
+  color: #ffffff;
+  background: #121212;
+  border-right: 1px solid #d4af37;
+}
+
+.app-brand {
+  margin: 0 0 1.5rem;
+  color: #f59e0b;
+  text-align: center;
+  font-family: Georgia, serif;
+  font-size: 1.4rem;
+}
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem;
+  background: #18181b;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.user-role {
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid #3b82f6;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.user-role-admin {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+}
+
+.app-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navigation-button,
+.logout-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  color: #e5e7eb;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.navigation-button:hover,
+.navigation-button.active {
+  color: #000000;
+  background: #f59e0b;
+  border-color: #d4af37;
+}
+
+.logout-button {
+  color: #ffffff;
+  background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+  border-color: #f87171;
+  text-align: center;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+  background: #050505;
+}
