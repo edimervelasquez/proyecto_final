@@ -1,0 +1,82 @@
+INSTRUCCIONES PARA ARRANCAR EL PROYECTO YULLITA SIES
+
+BACKEND (FastAPI)
+
+1. Clonar el repositorio y entrar en la carpeta que crea Git:
+
+   git clone https://github.com/edimervelasquez/proyecto_final.git
+   cd proyecto_final
+
+2. Crear y activar el entorno virtual:
+
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+
+   Si PowerShell bloquea la activación, ejecuta:
+
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+   .\venv\Scripts\Activate.ps1
+
+3. Instalar las dependencias:
+
+   pip install -r requirements.txt
+
+4. Iniciar MySQL y crear la base de datos con el nombre que usa la
+   configuración actual del proyecto:
+
+   CREATE DATABASE yullita_creaciones;
+
+5. Revisar backend/config.py y confirmar que la conexión apunte a esa base
+   de datos y que root y TU_CONTRASEÑA correspondan al usuario y contraseña
+   de MySQL de ese equipo:
+
+   SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:TU_CONTRASEÑA@localhost/yullita_creaciones'
+
+   No cambies el nombre de la base a yullita_creaciones_db, salvo que también
+   cambies el nombre al final de la conexión en backend/config.py.
+
+6. Desde la carpeta raíz del proyecto, arrancar el backend:
+
+   python app.py
+
+   El backend está hecho con FastAPI y quedará disponible en:
+
+   http://127.0.0.1:8000
+
+   Documentación de la API:
+
+   http://127.0.0.1:8000/docs
+
+
+FRONTEND
+
+Deja abierta la terminal donde está corriendo el backend. Abre otra terminal:
+
+1. Entra a la carpeta frontend:
+
+   cd proyecto_final\frontend
+
+   Si ya estás en la carpeta raíz del proyecto:
+
+   cd frontend
+
+2. Instala las dependencias del frontend:
+
+   npm install
+
+3. Inicia Vite:
+
+   npm run dev
+
+4. Abre en el navegador la dirección que indique Vite, normalmente:
+
+   http://localhost:5173/
+
+El frontend se conecta por defecto al backend en http://127.0.0.1:8000/api.
+
+
+PRIMER INICIO DE SESIÓN
+
+Si la base de datos está vacía, regístrate desde la pantalla de inicio.
+La primera cuenta registrada queda activa como administradora. Las cuentas
+registradas después quedan pendientes de aprobación.

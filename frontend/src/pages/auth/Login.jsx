@@ -29,7 +29,7 @@ export default function Login({ onLoginSuccess }) {
       onLoginSuccess(data);
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
-      setMensaje({ texto: 'Error de conexión con el servidor FastAPI.', tipo: 'error' });
+      setMensaje({ texto: err.message || 'No se pudo iniciar sesión.', tipo: 'error' });
     }
   };
 
@@ -44,7 +44,7 @@ export default function Login({ onLoginSuccess }) {
       setLoginData({ correo: registroData.correo, contrasenia: '' });
     } catch (err) {
       console.error("Error al registrar usuario:", err);
-      setMensaje({ texto: 'Error de conexión con el servidor FastAPI.', tipo: 'error' });
+      setMensaje({ texto: err.message || 'No se pudo crear la cuenta.', tipo: 'error' });
     }
   };
 

@@ -1,17 +1,26 @@
+import hmac
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from backend.repositories.auth_repository import AuthRepository
-from backend.models.models import Rol  # <-- 1. Importamos el modelo Rol
+from backend.models.models import Rol, Usuario
 from backend.security import create_access_token
+from werkzeug.security import check_password_hash, generate_password_hash
 
 class AuthService:
 
     @staticmethod
     def login_service(data, db: Session):
         usuario = AuthRepository.obtener_por_correo(db, data.correo)
-        if not usuario or usuario.contrasenia != data.contrasenia:
+        if not usuario or not AuthService._verify_password(
+            usuario.contrasenia, data.contrasenia
+        ):
             raise HTTPException(status_code=401, detail="Credenciales incorrectas.")
-        
+
+        if not AuthService._is_password_hash(usuario.contrasenia):
+            usuario.contrasenia = generate_password_hash(data.contrasenia)
+            db.commit()
+
         # --- CAMBIA ESTA LÍNEA AQUÍ MISMO ---
         if not usuario.estado or usuario.estado.upper() not in ['ACTIVO', 'APROBADO']:
             raise HTTPException(status_code=403, detail="Tu cuenta está pendiente de aprobación.")
@@ -40,17 +49,32 @@ class AuthService:
         if existe:
             raise HTTPException(status_code=400, detail="El correo electrónico ya está registrado.")
 
+        primer_usuario = db.query(Usuario).count() == 0
         usuario_dict = {
             "empleado": data.empleado,
             "correo": data.correo,
-            "contrasenia": data.contrasenia,
+            "contrasenia": generate_password_hash(data.contrasenia),
             "cedula_usuario": data.cedula,  # <-- Cámbialo aquí de "cedula" a "cedula_usuario"
-            "id_rol": data.id_rol,
-            "estado": "PENDIENTE"
+            "id_rol": 1 if primer_usuario else 3,
+            "estado": "ACTIVO" if primer_usuario else "PENDIENTE"
         }
 
         AuthRepository.crear_usuario(db, usuario_dict)
+        if primer_usuario:
+            return {
+                "mensaje": "Cuenta de administrador creada. Ya puedes iniciar sesión."
+            }
         return {"mensaje": "¡Usuario creado con éxito! Tu cuenta está pendiente de aprobación."}
+
+    @staticmethod
+    def _is_password_hash(password: str) -> bool:
+        return password.startswith(("scrypt:", "pbkdf2:"))
+
+    @staticmethod
+    def _verify_password(stored_password: str, provided_password: str) -> bool:
+        if AuthService._is_password_hash(stored_password):
+            return check_password_hash(stored_password, provided_password)
+        return hmac.compare_digest(stored_password, provided_password)
 
     @staticmethod
     def listar_usuarios_service(db: Session):

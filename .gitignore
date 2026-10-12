@@ -29,6 +29,7 @@ venv/
 __pycache__/
 *.pyc
 .env
+database.db
 
 # === Frontend (Node/React) ===
 node_modules/

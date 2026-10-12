@@ -8,11 +8,22 @@ from backend.routes.dashboard_routes import router as dashboard_router
 from backend.routes.produccion_routes import router as produccion_router
 
 # --- 1. Importamos la base de datos y los modelos ---
-from backend.database import engine, Base
+from backend.database import engine, Base, SessionLocal
 from backend.models import models  # Esto hace que SQLAlchemy lea todas tus tablas
+from backend.models.models import Rol
 
-# --- 2. Creamos las tablas en MySQL automáticamente si no existen ---
+# Create missing tables and seed the roles required for registration.
 Base.metadata.create_all(bind=engine)
+
+with SessionLocal() as db:
+    for role_id, role_name in (
+        (1, "ADMINISTRADOR"),
+        (2, "TRABAJADOR"),
+        (3, "PENDIENTE"),
+    ):
+        if db.query(Rol).filter(Rol.id_rol == role_id).first() is None:
+            db.add(Rol(id_rol=role_id, nombre_rol=role_name))
+    db.commit()
 
 app = FastAPI(
     title="API de Gestión",
