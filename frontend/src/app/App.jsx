@@ -5,6 +5,8 @@ import Calidad from '../pages/quality/Calidad';
 import Dashboard from '../pages/dashboard/Dashboard';
 import FichaTecnica from '../pages/inventory/FichaTecnica';
 import IngresoInsumos from '../pages/inventory/IngresoInsumos';
+import InventarioPrendas from '../pages/inventory/InventarioPrendas';
+import Ventas from '../pages/inventory/Ventas';
 import Login from '../pages/auth/Login';
 import GestionEmpleados from '../pages/users/GestionEmpleados';
 import Produccion from '../pages/production/Produccion';
@@ -33,14 +35,24 @@ const getInitialAuth = () => {
 export default function App() {
   const [auth, setAuth] = useState(getInitialAuth);
   const [currentView, setCurrentView] = useState(
-    auth?.usuario?.rol === 'administrador' ? 'dashboard' : 'produccion',
+    auth?.usuario?.id_rol === 1
+      ? 'dashboard'
+      : auth?.usuario?.id_rol === 3
+        ? 'ventas'
+        : 'produccion',
   );
 
   const handleLoginSuccess = (data) => {
     const nextAuth = { ...data, usuario: normalizeUser(data) };
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
     setAuth(nextAuth);
-    setCurrentView(nextAuth.usuario.id_rol === 1 ? 'dashboard' : 'produccion');
+    setCurrentView(
+      nextAuth.usuario.id_rol === 1
+        ? 'dashboard'
+        : nextAuth.usuario.id_rol === 3
+          ? 'ventas'
+          : 'produccion',
+    );
   };
 
   const handleLogout = () => {
@@ -53,13 +65,16 @@ export default function App() {
 
   const user = auth.usuario;
   const admin = user.rol === 'jefe' || user.rol === 'administrador' || user.id_rol === 1;
+  const vendedor = user.id_rol === 3;
   const views = {
     dashboard: admin ? <Dashboard user={user} /> : null,
     empleados: admin ? <GestionEmpleados user={user} /> : null,
-    produccion: <Produccion user={user} />,
-    insumos: <IngresoInsumos user={user} />,
-    ficha: <FichaTecnica user={user} />,
-    calidad: <Calidad user={user} />,
+    produccion: !vendedor ? <Produccion user={user} /> : null,
+    insumos: !vendedor ? <IngresoInsumos user={user} /> : null,
+    ficha: !vendedor ? <FichaTecnica user={user} /> : null,
+    calidad: !vendedor ? <Calidad user={user} /> : null,
+    inventario: <InventarioPrendas user={user} />,
+    ventas: <Ventas user={user} />,
   };
 
   return (
@@ -69,7 +84,7 @@ export default function App() {
       onNavigate={setCurrentView}
       onLogout={handleLogout}
     >
-      {views[currentView] || views.produccion}
+      {views[currentView] || (vendedor ? views.ventas : views.produccion)}
     </AppLayout>
   );
 }

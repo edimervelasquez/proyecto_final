@@ -21,6 +21,19 @@ class RequestMiddleware(BaseHTTPMiddleware):
         "/api/auth/login",
         "/api/auth/registrar",
     }
+    ADMIN_ONLY_PATHS = (
+        "/api/dashboard",
+        "/api/auth/usuarios",
+    )
+    WORKER_PATHS = (
+        "/api/insumos",
+        "/api/produccion",
+    )
+    SELLER_PATHS = (
+        "/api/ventas",
+        "/api/inventario",
+        "/api/comercial/productos",
+    )
 
     async def dispatch(self, request: Request, call_next: Callable):
         start_time = time.perf_counter()
@@ -32,9 +45,38 @@ class RequestMiddleware(BaseHTTPMiddleware):
                 return self._unauthorized(request, start_time, "Token requerido.")
 
             try:
-                request.state.token_payload = validate_access_token(token)
+                payload = validate_access_token(token)
+                request.state.token_payload = payload
             except ValueError as exc:
                 return self._unauthorized(request, start_time, str(exc))
+
+            role = str(payload.get("role", "")).upper()
+            path = request.url.path
+            allowed = None
+            if (
+                path.startswith("/api/insumos/")
+                and path.endswith("/stock-minimo")
+                and request.method == "PUT"
+            ):
+                allowed = {"ADMINISTRADOR"}
+            elif any(path.startswith(prefix) for prefix in self.ADMIN_ONLY_PATHS):
+                allowed = {"ADMINISTRADOR"}
+            elif any(path.startswith(prefix) for prefix in self.WORKER_PATHS):
+                allowed = {"ADMINISTRADOR", "TRABAJADOR"}
+            elif any(path.startswith(prefix) for prefix in self.SELLER_PATHS):
+                allowed = {"ADMINISTRADOR", "VENDEDOR"}
+                if path.startswith("/api/inventario") and request.method != "GET":
+                    allowed = {"ADMINISTRADOR"}
+                if (
+                    path.startswith("/api/comercial/productos/")
+                    and request.method != "GET"
+                ):
+                    allowed = {"ADMINISTRADOR"}
+            if allowed is not None and role not in allowed:
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Tu rol no tiene permiso para esta operación."},
+                )
 
         try:
             response = await call_next(request)

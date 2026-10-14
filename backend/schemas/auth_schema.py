@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
+from typing import Literal
 
 # Esquema para /registrar
 class UsuarioRegistro(BaseModel):
@@ -7,13 +7,17 @@ class UsuarioRegistro(BaseModel):
     correo: EmailStr
     contrasenia: str
     cedula: str
-    id_rol: Optional[int] = 3
+    id_rol: Literal[2, 3] = 2
 
 # Esquema para /login
 class UsuarioLogin(BaseModel):
     correo: EmailStr
     contrasenia: str
 
-# Esquema para cambiar estado
+
 class EstadoUpdate(BaseModel):
-    estado: str
+    estado: str = Field(..., min_length=1, max_length=20)
+
+
+class RolUpdate(BaseModel):
+    id_rol: int = Field(..., ge=1)

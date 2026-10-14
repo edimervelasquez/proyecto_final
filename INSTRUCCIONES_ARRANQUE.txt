@@ -79,4 +79,63 @@ PRIMER INICIO DE SESIÓN
 
 Si la base de datos está vacía, regístrate desde la pantalla de inicio.
 La primera cuenta registrada queda activa como administradora. Las cuentas
-registradas después quedan pendientes de aprobación.
+registradas después quedan pendientes de aprobación. Al registrarse se puede
+solicitar el rol de trabajador o vendedor; nunca se puede solicitar el de
+administrador. El administrador activa las cuentas pendientes y administra
+sus roles desde Gestión de Usuarios.
+
+
+TRAZABILIDAD Y DASHBOARD
+
+El dashboard consulta el inventario, las órdenes, los controles de calidad y
+los ingresos guardados en la base de datos; no usa cifras de presentación.
+Las pantallas de Ingreso de Insumos, Ficha Técnica, Producción y Calidad
+muestran los registros recientes junto con el usuario, la fecha, el proceso
+y el estado correspondiente.
+
+Al iniciar, SQLAlchemy crea las tablas nuevas de trazabilidad y control de
+calidad si todavía no existen. Los datos guardados antes de habilitar la
+trazabilidad siguen disponibles, pero se mostrarán como "No registrado"
+cuando la base de datos no tenga quién los creó.
+
+Puedes seleccionar insumos y áreas existentes o crear un insumo al registrar
+su ingreso y un área nueva desde el formulario de producción. Luego crea una
+ficha técnica con su SKU y materiales, y registra la orden asociada a esa
+ficha.
+
+En Producción, el trabajador o administrador puede iniciar un retraso en una
+orden activa. La orden conserva su área y muestra una alerta hasta que un
+trabajador o administrador la reanude. El sistema calcula el tiempo detenido
+y conserva motivo, área, fechas y responsables en el historial y el dashboard.
+
+FLUJO DE PRODUCCIÓN, INVENTARIO Y VENTAS
+
+Al crear una ficha técnica registra también el costo de mano de obra y los
+precios mayorista y al detal. El administrador puede actualizarlos en
+Inventario de Prendas. Las fichas ya existentes se crean con precios y costos
+en cero; configura sus valores antes de registrar ventas.
+
+Las órdenes empiezan en Corte y avanzan en orden por Corte, Confección,
+Estampado y Calidad y Empaque. El trabajador o administrador registra el
+avance de una etapa cuando termina el trabajo. Calidad permite inspeccionar
+órdenes que están en Calidad y Empaque; registra cantidades aprobadas y
+rechazadas, además de observaciones. Las aprobadas pasan a la bodega indicada
+por el canal de la orden. Las rechazadas no ingresan a inventario.
+
+Si ya hay prendas terminadas antes de empezar a usar el sistema, el
+administrador puede cargarlas una sola vez por producto y ubicación en
+Inventario de Prendas, indicando cantidad y costo unitario estimado. Este
+ajuste inicial queda auditado y no se permite después de movimientos de ese
+producto en esa ubicación. Las prendas producidas se agregan al inventario al
+ser aprobadas por calidad.
+
+Las ubicaciones de existencias son Bodega mayorista, Bodega del local y
+Local/tienda. El administrador puede trasladar prendas entre ellas. Las ventas
+mayoristas descuentan de Bodega mayorista; las ventas al detal descuentan de
+Local/tienda. El trabajador no puede acceder a ventas ni inventario comercial;
+el vendedor puede consultar existencias y registrar ventas, pero no puede
+realizar traslados ni administrar precios.
+
+El dashboard financiero presenta ventas, costo estimado de prendas vendidas,
+margen estimado y pérdida estimada por rechazos. No es utilidad neta: no
+incluye gastos generales, impuestos ni otros costos que no estén registrados.

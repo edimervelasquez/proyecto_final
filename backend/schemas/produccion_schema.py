@@ -1,7 +1,28 @@
 from datetime import date
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+
+class AreaCreate(BaseModel):
+    nombre_area: str = Field(..., min_length=1, max_length=50)
+
+
+class RetrasoProduccionCreate(BaseModel):
+    motivo: Literal[
+        "Reparación de prendas con defecto",
+        "Falta de materia prima",
+        "Falla de maquinaria",
+        "Espera de instrucciones o aprobación",
+        "Otro",
+    ]
+    detalle: Optional[str] = Field(default=None, max_length=1000)
+
+    @model_validator(mode="after")
+    def validar_detalle_otro(self):
+        if self.motivo == "Otro" and not (self.detalle or "").strip():
+            raise ValueError("Especifica el motivo cuando seleccionas 'Otro'.")
+        return self
 
 
 class OrdenProduccionCreate(BaseModel):
@@ -9,5 +30,4 @@ class OrdenProduccionCreate(BaseModel):
     sku_prenda: str
     cantidad_a_producir: int = Field(..., gt=0)
     fecha_entrega: date
-    id_usuario: Optional[int] = None
-    id_empleado: Optional[int] = None
+    canal_destino: Literal["MAYORISTA", "DETAL"]

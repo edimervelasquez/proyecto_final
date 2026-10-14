@@ -18,6 +18,11 @@ export const authService = {
     body: JSON.stringify({ estado }),
   }),
 
+  cambiarRol: (idUsuario, id_rol) => request(`/auth/usuarios/${idUsuario}/rol`, {
+    method: 'PUT',
+    body: JSON.stringify({ id_rol }),
+  }),
+
   eliminarUsuario: (idUsuario) => request(`/auth/usuarios/${idUsuario}`, {
     method: 'DELETE',
   }),

@@ -234,6 +234,26 @@
   background: #d97706;
 }
 
+.calidad-ayuda-etapa {
+  margin-top: 1rem;
+  padding: 1rem;
+  color: #e5e7eb;
+  background: #27220f;
+  border: 1px solid #a16207;
+  border-radius: 8px;
+}
+
+.calidad-ayuda-etapa p {
+  margin-top: 0.4rem;
+  color: #d4d4d8;
+}
+
+.calidad-ayuda-etapa ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0 1.25rem;
+}
+
 .alerta-sies {
   padding: 1rem;
   border-radius: 6px;

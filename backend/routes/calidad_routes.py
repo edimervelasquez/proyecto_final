@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
 from backend.controllers.calidad_controller import CalidadController
@@ -10,6 +10,14 @@ router = APIRouter(prefix="/produccion/calidad", tags=["Calidad"])
 
 @router.post("", status_code=status.HTTP_200_OK)
 def registrar_control_calidad(
-    data: ControlCalidadCreate, db: Session = Depends(get_db)
+    data: ControlCalidadCreate,
+    request: Request,
+    db: Session = Depends(get_db),
 ):
-    return CalidadController.registrar_control(data, db)
+    id_usuario = int(request.state.token_payload["sub"])
+    return CalidadController.registrar_control(data, db, id_usuario)
+
+
+@router.get("")
+def listar_controles_calidad(db: Session = Depends(get_db)):
+    return CalidadController.listar_controles(db)

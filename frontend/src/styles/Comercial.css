@@ -1,0 +1,135 @@
+.comercial-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  color: #f9fafb;
+}
+
+.comercial-panel {
+  padding: 1.25rem;
+  background: #121212;
+  border: 1px solid #374151;
+  border-radius: 10px;
+}
+
+.comercial-panel h3 {
+  margin-bottom: 1rem;
+  color: #f59e0b;
+}
+
+.comercial-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.comercial-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.comercial-form-grid input,
+.comercial-form-grid select {
+  width: 100%;
+  color: #f9fafb;
+  background: #09090b;
+}
+
+.comercial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.comercial-action {
+  padding: 0.65rem 0.9rem;
+  color: #111827;
+  background: #f59e0b;
+  font-weight: 700;
+}
+
+.comercial-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.comercial-action.secundario {
+  color: #f9fafb;
+  background: #374151;
+}
+
+.comercial-tabla-scroll {
+  overflow-x: auto;
+}
+
+.comercial-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.comercial-tabla th,
+.comercial-tabla td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #374151;
+  white-space: nowrap;
+}
+
+.comercial-tabla th {
+  color: #fbbf24;
+}
+
+.comercial-lista {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.comercial-venta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.9rem;
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+}
+
+.comercial-venta > div,
+.venta-precio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.comercial-venta span,
+.venta-precio {
+  color: #d1d5db;
+  font-size: 0.88rem;
+}
+
+.comercial-nota {
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .comercial-container {
+    padding: 0.65rem;
+  }
+
+  .comercial-panel {
+    padding: 0.85rem;
+  }
+
+  .comercial-venta {
+    flex-direction: column;
+  }
+}

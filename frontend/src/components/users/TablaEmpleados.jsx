@@ -1,6 +1,6 @@
 import '../../styles/GestionEmpleados.css';
 
-const TablaEmpleados = ({ usuarios, onCambiarEstado, onEliminar }) => {
+const TablaEmpleados = ({ usuarios, onCambiarEstado, onCambiarRol, onEliminar }) => {
   return (
     <div className="tabla-container">
       <table className="tabla-empleados">
@@ -22,7 +22,17 @@ const TablaEmpleados = ({ usuarios, onCambiarEstado, onEliminar }) => {
               <td>{u.empleado || u.nombre}</td>
               <td>{u.correo_usuario || u.correo}</td>
               <td>{u.cedula || 'N/A'}</td>
-              <td>{u.rol || u.nombre_rol}</td>
+              <td>
+                <select
+                  value={u.id_rol}
+                  onChange={(event) => onCambiarRol(u.id_usuario, Number(event.target.value))}
+                  aria-label={`Rol de ${u.empleado || u.nombre}`}
+                >
+                  <option value={1}>Administrador</option>
+                  <option value={2}>Trabajador</option>
+                  <option value={3}>Vendedor</option>
+                </select>
+              </td>
               <td>
                 <span className={`badge-estado ${u.estado?.toLowerCase()}`}>
                   {u.estado}

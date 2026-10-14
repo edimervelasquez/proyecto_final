@@ -1,74 +1,148 @@
 import '../../styles/FichaTecnica.css';
 
-const FormularioFicha = ({ formData, onChange, onSubmit, cargando }) => {
-  return (
-    <div className="form-card">
-      <div className="form-card-header">
-        <h3>Crear Ficha Técnica</h3>
-        <p>Define las especificaciones de materia prima para la elaboración del producto.</p>
+const FormularioFicha = ({
+  formData,
+  catalogo,
+  onChange,
+  onInsumoChange,
+  onAddInsumo,
+  onRemoveInsumo,
+  onSubmit,
+  cargando,
+}) => (
+  <div className="form-card">
+    <div className="form-card-header">
+      <h3>Crear Ficha Técnica</h3>
+      <p>Define los materiales y cantidades requeridos para fabricar un producto.</p>
+    </div>
+
+    <form onSubmit={onSubmit} className="form-grid-layout">
+      <div className="grid-2">
+        <div className="input-group">
+          <label>SKU / Referencia del producto *</label>
+          <input
+            type="text"
+            name="sku_prenda"
+            placeholder="Ej. CAM-OV-NEG-M"
+            value={formData.sku_prenda}
+            onChange={onChange}
+            maxLength="50"
+            required
+          />
+        </div>
+        <div className="input-group">
+          <label>Nombre del producto *</label>
+          <input
+            type="text"
+            name="nombre_producto"
+            placeholder="Ej. Camiseta Oversize Negra"
+            value={formData.nombre_producto}
+            onChange={onChange}
+            required
+          />
+        </div>
       </div>
 
-      <form onSubmit={onSubmit} className="form-grid-layout">
-        <div className="grid-2">
-          <div className="input-group">
-            <label>Nombre del Producto / Referencia *</label>
-            <input
-              type="text"
-              name="nombre_producto"
-              placeholder="Ej. Camiseta Over Size Talla M"
-              value={formData.nombre_producto}
-              onChange={onChange}
-              required
-            />
-          </div>
+      <div className="input-group">
+        <label>Descripción / Observaciones</label>
+        <input
+          type="text"
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={onChange}
+        />
+      </div>
 
+      <div className="grid-2">
+        <div className="input-group">
+          <label>Costo de mano de obra por prenda ($) *</label>
+          <input
+            type="number"
+            name="costo_mano_obra"
+            min="0"
+            step="0.01"
+            value={formData.costo_mano_obra}
+            onChange={onChange}
+            required
+          />
+        </div>
+        <div className="input-group">
+          <label>Precio mayorista por prenda ($) *</label>
+          <input
+            type="number"
+            name="precio_mayorista"
+            min="0.01"
+            step="0.01"
+            value={formData.precio_mayorista}
+            onChange={onChange}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="input-group">
+        <label>Precio al detal por prenda ($) *</label>
+        <input
+          type="number"
+          name="precio_detal"
+          min="0.01"
+          step="0.01"
+          value={formData.precio_detal}
+          onChange={onChange}
+          required
+        />
+      </div>
+
+      <h4>Insumos por unidad</h4>
+      {formData.insumos.map((insumo, index) => (
+        <div className="grid-2" key={`insumo-${index}`}>
           <div className="input-group">
-            <label>ID Materia Prima Requerida *</label>
-            <input
-              type="number"
-              name="id_materia_prima"
-              placeholder="Ej. 1"
-              value={formData.id_materia_prima}
-              onChange={onChange}
+            <label>Materia prima *</label>
+            <select
+              value={insumo.id_materiaPrima}
+              onChange={(event) => onInsumoChange(index, 'id_materiaPrima', event.target.value)}
               required
-            />
+            >
+              <option value="">Selecciona un insumo</option>
+              {catalogo.map((material) => (
+                <option key={material.id_materiaPrima} value={material.id_materiaPrima}>
+                  {material.nombre_material}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="input-group">
+            <label>Cantidad requerida por unidad *</label>
+            <div className="grid-2">
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={insumo.cantidad_estimada}
+                onChange={(event) => onInsumoChange(index, 'cantidad_estimada', event.target.value)}
+                required
+              />
+              {formData.insumos.length > 1 && (
+                <button type="button" className="btn-sies-primary" onClick={() => onRemoveInsumo(index)}>
+                  Quitar
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      ))}
 
-        <div className="grid-2">
-          <div className="input-group">
-            <label>Cantidad Requerida por Unidad *</label>
-            <input
-              type="number"
-              step="0.01"
-              name="cantidad_requerida"
-              placeholder="Ej. 1.5"
-              value={formData.cantidad_requerida}
-              onChange={onChange}
-              required
-            />
-          </div>
+      <button type="button" className="btn-sies-primary" onClick={onAddInsumo}>
+        Agregar otro insumo
+      </button>
 
-          <div className="input-group">
-            <label>Descripción / Observaciones</label>
-            <input
-              type="text"
-              name="descripcion"
-              placeholder="Ej. Tela 100% algodón"
-              value={formData.descripcion}
-              onChange={onChange}
-            />
-          </div>
-        </div>
-
-        <div className="form-actions-right">
-          <button type="submit" className="btn-sies-primary" disabled={cargando}>
-            {cargando ? 'Guardando...' : 'Crear Ficha Técnica'}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
+      <div className="form-actions-right">
+        <button type="submit" className="btn-sies-primary" disabled={cargando || catalogo.length === 0}>
+          {cargando ? 'Guardando...' : 'Crear Ficha Técnica'}
+        </button>
+      </div>
+    </form>
+  </div>
+);
 
 export default FormularioFicha;

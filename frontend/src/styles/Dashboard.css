@@ -1,4 +1,92 @@
 /* --- RESET Y BASE DEL DASHBOARD --- */
+.dashboard-container {
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+  color: #fff;
+}
+
+.dashboard-title {
+  margin: 0 0 1.25rem;
+  color: #f9fafb;
+  font-size: 1.8rem;
+}
+
+.dashboard-stock-alerts {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid #713f12;
+  border-radius: 10px;
+  background: #18120b;
+}
+
+.dashboard-stock-alerts h2 {
+  margin: 0 0 0.75rem;
+  color: #fbbf24;
+  font-size: 1.1rem;
+}
+
+.dashboard-stock-alerts ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dashboard-stock-alerts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #f3f4f6;
+}
+
+.dashboard-stock-alerts li span {
+  color: #d4d4d8;
+}
+
+.dashboard-refresh {
+  margin: 0 0 1rem;
+  padding: 0.65rem 1rem;
+  color: #111;
+  font-weight: 700;
+  background: #f59e0b;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dashboard-refresh:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.card-icon.gold {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border-radius: 8px;
+}
+
+.card-info {
+  min-width: 0;
+}
+
+.card-title {
+  display: block;
+  color: #d1d5db;
+}
+
+.card-value {
+  margin: 0.3rem 0 0;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
 :root, body, #root {
   background-color: #050505 !important;
   margin: 0;

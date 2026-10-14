@@ -33,6 +33,16 @@ const GestionEmpleados = () => {
     }
   };
 
+  const cambiarRol = async (id, idRol) => {
+    try {
+      const res = await authService.cambiarRol(id, idRol);
+      setMensaje({ texto: res.mensaje, tipo: 'exito' });
+      await cargarUsuarios();
+    } catch (error) {
+      setMensaje({ texto: error.message || 'No se pudo cambiar el rol.', tipo: 'error' });
+    }
+  };
+
   const eliminarUsuario = async (id) => {
     if (window.confirm('¿Seguro que desea eliminar este usuario?')) {
       const res = await authService.eliminarUsuario(id);
@@ -55,6 +65,7 @@ const GestionEmpleados = () => {
         <TablaEmpleados
           usuarios={usuarios}
           onCambiarEstado={cambiarEstado}
+          onCambiarRol={cambiarRol}
           onEliminar={eliminarUsuario}
         />
       )}

@@ -1,0 +1,48 @@
+.trazabilidad-card {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #111;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  color: #f9fafb;
+}
+
+.trazabilidad-card h3 {
+  margin: 0 0 1rem;
+  color: #f59e0b;
+}
+
+.trazabilidad-scroll {
+  overflow-x: auto;
+}
+
+.trazabilidad-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.trazabilidad-table th,
+.trazabilidad-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid #292929;
+  text-align: left;
+  vertical-align: top;
+}
+
+.trazabilidad-table th {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.trazabilidad-table td {
+  color: #e5e7eb;
+}
+
+.trazabilidad-info {
+  color: #9ca3af;
+}
+
+.trazabilidad-error {
+  color: #fca5a5;
+}

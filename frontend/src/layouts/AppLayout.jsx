@@ -8,6 +8,13 @@ const NAVIGATION_ITEMS = [
 const ADMIN_ITEMS = [
   { id: 'dashboard', label: '📊 Dashboard' },
   { id: 'empleados', label: '👥 Empleados' },
+  { id: 'inventario', label: '👕 Inventario Prendas' },
+  { id: 'ventas', label: '💰 Ventas' },
+];
+
+const SALES_ITEMS = [
+  { id: 'inventario', label: '👕 Prendas y Precios' },
+  { id: 'ventas', label: '💰 Registrar Ventas' },
 ];
 
 const isAdmin = (user) =>
@@ -15,7 +22,12 @@ const isAdmin = (user) =>
 
 export default function AppLayout({ user, currentView, onNavigate, onLogout, children }) {
   const admin = isAdmin(user);
-  const items = admin ? [...ADMIN_ITEMS, ...NAVIGATION_ITEMS] : NAVIGATION_ITEMS;
+  const vendedor = user.id_rol === 3;
+  const items = admin
+    ? [...ADMIN_ITEMS, ...NAVIGATION_ITEMS]
+    : vendedor
+      ? SALES_ITEMS
+      : NAVIGATION_ITEMS;
 
   return (
     <div className="app-shell">

@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
-from backend.models.models import Usuario
+from backend.models.models import Rol, Usuario
 
 class AuthRepository:
+
+    @staticmethod
+    def obtener_por_id(db: Session, user_id: int):
+        return db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
 
     @staticmethod
     def obtener_por_correo(db: Session, correo: str):
@@ -11,26 +15,29 @@ class AuthRepository:
     def crear_usuario(db: Session, usuario_data: dict):
         nuevo_usuario = Usuario(**usuario_data)
         db.add(nuevo_usuario)
-        db.commit()
-        db.refresh(nuevo_usuario)
         return nuevo_usuario
 
     @staticmethod
-    def obtener_todos_los_usuarios(db: Session):
-        return db.query(Usuario).all()
+    def obtener_usuarios_con_rol(db: Session):
+        return (
+            db.query(Usuario, Rol.nombre_rol)
+            .outerjoin(Rol, Rol.id_rol == Usuario.id_rol)
+            .order_by(Usuario.id_usuario)
+            .all()
+        )
 
     @staticmethod
     def actualizar_estado_usuario(db: Session, user_id: int, nuevo_estado: str):
         usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
         if usuario:
             usuario.estado = nuevo_estado
-            
-            # Si el estado es aprobado/activo, le asignamos automáticamente el rol de trabajador
-            if nuevo_estado in ['ACTIVO', 'APROBADO']:
-                usuario.id_rol = 2  # Asegúrate de que 2 sea el id_rol de trabajador en tu tabla 'rol'
-                
-            db.commit()
-            db.refresh(usuario)
+        return usuario
+
+    @staticmethod
+    def actualizar_rol_usuario(db: Session, user_id: int, id_rol: int):
+        usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
+        if usuario:
+            usuario.id_rol = id_rol
         return usuario
     
     @staticmethod
@@ -38,5 +45,4 @@ class AuthRepository:
         usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
         if usuario:
             db.delete(usuario)
-            db.commit()
         return usuario

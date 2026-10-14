@@ -17,7 +17,7 @@ export default function Login({ onLoginSuccess }) {
     correo: '',
     contrasenia: '',
     cedula: '',
-    id_rol: 3
+    id_rol: 2
   });
 
   const handleLoginSubmit = async (e) => {
@@ -187,6 +187,21 @@ export default function Login({ onLoginSuccess }) {
                     onChange={(e) => setRegistroData({ ...registroData, contrasenia: e.target.value })}
                   />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Rol solicitado</label>
+                <select
+                  value={registroData.id_rol}
+                  onChange={(e) => setRegistroData({
+                    ...registroData,
+                    id_rol: Number(e.target.value),
+                  })}
+                >
+                  <option value={2}>Trabajador</option>
+                  <option value={3}>Vendedor</option>
+                </select>
+                <small>El administrador debe aprobar la cuenta antes de ingresar.</small>
               </div>
 
               <button type="submit" className="btn-success">
