@@ -1,4 +1,5 @@
 import hmac
+import os
 
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -7,7 +8,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.repositories.auth_repository import AuthRepository
 from backend.models.models import Rol, Usuario
-from backend.schemas.auth_schema import UsuarioLogin, UsuarioRegistro
+from backend.schemas.auth_schema import (
+    UsuarioAdminBootstrap,
+    UsuarioLogin,
+    UsuarioRegistro,
+)
 from backend.security import create_access_token
 
 class AuthService:
@@ -61,26 +66,80 @@ class AuthService:
         if existe:
             raise HTTPException(status_code=400, detail="El correo electrónico ya está registrado.")
 
-        primer_usuario = db.query(Usuario).count() == 0
         usuario_dict = {
             "empleado": data.empleado,
             "correo": data.correo,
             "contrasenia": generate_password_hash(data.contrasenia),
             "cedula_usuario": data.cedula,
-            "id_rol": 1 if primer_usuario else data.id_rol,
-            "estado": "ACTIVO" if primer_usuario else "PENDIENTE"
+            "id_rol": data.id_rol,
+            "estado": "PENDIENTE",
         }
 
         AuthRepository.crear_usuario(db, usuario_dict)
         AuthService._commit(db)
-        if primer_usuario:
-            return {
-                "mensaje": "Cuenta de administrador creada. Ya puedes iniciar sesión."
-            }
         return {
             "mensaje": (
                 "¡Usuario creado con éxito! Tu cuenta está pendiente de aprobación."
             )
+        }
+
+    @staticmethod
+    def bootstrap_admin_service(
+        data: UsuarioAdminBootstrap,
+        provided_token: str | None,
+        db: Session,
+    ):
+        configured_token = os.environ.get("INITIAL_ADMIN_TOKEN", "")
+        if len(configured_token.encode("utf-8")) < 32:
+            raise HTTPException(
+                status_code=503,
+                detail="La creación inicial de administrador no está configurada.",
+            )
+        if not provided_token or not hmac.compare_digest(
+            provided_token, configured_token
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Token de inicialización inválido.",
+            )
+
+        admin_role = (
+            db.query(Rol)
+            .filter(Rol.id_rol == 1)
+            .with_for_update()
+            .first()
+        )
+        if admin_role is None:
+            raise HTTPException(
+                status_code=503,
+                detail="El rol administrador no está inicializado.",
+            )
+        if db.query(Usuario).filter(Usuario.id_rol == 1).first():
+            raise HTTPException(
+                status_code=409,
+                detail="Ya existe una cuenta administradora; no se permite reiniciar.",
+            )
+
+        if AuthRepository.obtener_por_correo(db, data.correo):
+            raise HTTPException(
+                status_code=400,
+                detail="El correo electrónico ya está registrado.",
+            )
+
+        AuthRepository.crear_usuario(
+            db,
+            {
+                "empleado": data.empleado,
+                "correo": data.correo,
+                "contrasenia": generate_password_hash(data.contrasenia),
+                "cedula_usuario": data.cedula,
+                "id_rol": 1,
+                "estado": "ACTIVO",
+            },
+        )
+        AuthService._commit(db)
+        return {
+            "mensaje": "Cuenta de administrador creada. Ya puedes iniciar sesión."
         }
 
     @staticmethod

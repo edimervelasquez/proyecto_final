@@ -3,15 +3,26 @@ from sqlalchemy.orm import Session
 
 from backend.controllers.insumos_controller import InsumosController
 from backend.database import get_db
+from backend.dependencies import get_current_user
 from backend.schemas.insumos_schema import (
     FichaTecnicaCreate,
+    FichaTecnicaResponse,
     IngresoInsumoCreate,
+    IngresoInsumoResponse,
     StockMinimoUpdate,
 )
 
-router = APIRouter(prefix="/insumos", tags=["Insumos y Fichas Técnicas"])
+router = APIRouter(
+    prefix="/insumos",
+    tags=["Insumos y Fichas Técnicas"],
+    dependencies=[Depends(get_current_user)],
+)
 
-@router.post("/ingreso", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/ingreso",
+    status_code=status.HTTP_201_CREATED,
+    response_model=IngresoInsumoResponse,
+)
 def registrar_ingreso(
     data: IngresoInsumoCreate,
     request: Request,
@@ -20,7 +31,11 @@ def registrar_ingreso(
     id_usuario = int(request.state.token_payload["sub"])
     return InsumosController.registrar_ingreso(data, db, id_usuario)
 
-@router.post("/ficha-tecnica", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/ficha-tecnica",
+    status_code=status.HTTP_201_CREATED,
+    response_model=FichaTecnicaResponse,
+)
 def crear_ficha(
     data: FichaTecnicaCreate,
     request: Request,

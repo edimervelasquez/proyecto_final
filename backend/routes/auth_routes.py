@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Header, status
 from sqlalchemy.orm import Session
 
 from backend.controllers.auth_controller import AuthController
@@ -6,9 +6,11 @@ from backend.database import get_db
 from backend.schemas.auth_schema import (
     EstadoUpdate,
     RolUpdate,
+    UsuarioAdminBootstrap,
     UsuarioLogin,
     UsuarioRegistro,
 )
+from backend.services.auth_service import AuthService
 
 router = APIRouter()
 
@@ -19,6 +21,19 @@ def login(data: UsuarioLogin, db: Session = Depends(get_db)):
 @router.post("/registrar", status_code=status.HTTP_201_CREATED)
 def registrar(data: UsuarioRegistro, db: Session = Depends(get_db)):
     return AuthController.registrar(data, db)
+
+
+@router.post("/bootstrap-admin", status_code=status.HTTP_201_CREATED)
+def bootstrap_admin(
+    data: UsuarioAdminBootstrap,
+    db: Session = Depends(get_db),
+    initial_admin_token: str | None = Header(
+        default=None,
+        alias="X-Initial-Admin-Token",
+    ),
+):
+    return AuthService.bootstrap_admin_service(data, initial_admin_token, db)
+
 
 @router.get("/usuarios")
 def obtener_usuarios(db: Session = Depends(get_db)):

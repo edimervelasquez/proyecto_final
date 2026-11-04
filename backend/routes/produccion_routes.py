@@ -3,17 +3,58 @@ from sqlalchemy.orm import Session
 
 from backend.controllers.produccion_controller import ProduccionController
 from backend.database import get_db
+from backend.dependencies import get_current_user
 from backend.schemas.produccion_schema import (
+    AvanceProcesoResponse,
     AreaCreate,
+    ProcesoProduccionCreate,
+    ProcesoProduccionResponse,
     OrdenProduccionCreate,
+    OrdenProduccionResponse,
     RetrasoProduccionCreate,
+    TrazoProduccionCreate,
+    TrazoProduccionResponse,
 )
-from backend.schemas.comercial_schema import EtapaProduccionUpdate
 
-router = APIRouter(prefix="/produccion", tags=["Producción"])
+router = APIRouter(
+    prefix="/produccion",
+    tags=["Producción"],
+    dependencies=[Depends(get_current_user)],
+)
+
+@router.post(
+    "/trazos",
+    status_code=status.HTTP_201_CREATED,
+    response_model=TrazoProduccionResponse,
+)
+def registrar_trazo(
+    data: TrazoProduccionCreate,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    id_usuario = int(request.state.token_payload["sub"])
+    return ProduccionController.registrar_trazo(data, db, id_usuario)
 
 
-@router.post("/orden", status_code=status.HTTP_201_CREATED)
+@router.get(
+    "/trazos",
+    response_model=list[TrazoProduccionResponse],
+)
+def listar_trazos(db: Session = Depends(get_db)):
+    return ProduccionController.listar_trazos(db)
+
+
+@router.post(
+    "/ordenes",
+    status_code=status.HTTP_201_CREATED,
+    response_model=OrdenProduccionResponse,
+)
+@router.post(
+    "/orden",
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+    response_model=OrdenProduccionResponse,
+)
 def registrar_orden_produccion(
     data: OrdenProduccionCreate,
     request: Request,
@@ -43,10 +84,21 @@ def crear_area(data: AreaCreate, db: Session = Depends(get_db)):
     return ProduccionController.crear_area(data, db)
 
 
-@router.post("/ordenes/{id_produccion}/avanzar")
+@router.get(
+    "/ordenes/{id_produccion}/procesos",
+    response_model=list[ProcesoProduccionResponse],
+)
+def listar_procesos_orden(id_produccion: int, db: Session = Depends(get_db)):
+    return ProduccionController.listar_procesos(id_produccion, db)
+
+
+@router.post(
+    "/ordenes/{id_produccion}/avanzar",
+    response_model=AvanceProcesoResponse,
+)
 def avanzar_etapa(
     id_produccion: int,
-    data: EtapaProduccionUpdate,
+    data: ProcesoProduccionCreate,
     request: Request,
     db: Session = Depends(get_db),
 ):

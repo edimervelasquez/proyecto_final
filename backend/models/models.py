@@ -106,9 +106,35 @@ class Area(Base):
 class FichaTecnicaInsumo(Base):
     __tablename__ = 'ficha_tecnica_insumo'
     id_ficha = Column(Integer, primary_key=True)
-    sku_prenda = Column(String(50), nullable=False) 
+    sku_prenda = Column(
+        String(50),
+        ForeignKey('producto_comercial.sku_prenda'),
+        nullable=False,
+    )
     id_materiaPrima = Column(Integer, ForeignKey('materia_prima.id_materiaPrima'), nullable=False)
     cantidad_estimada = Column(Numeric(10, 2), nullable=False)
+
+
+class TrazoProduccion(Base):
+    __tablename__ = "trazo_produccion"
+
+    id_trazo = Column(Integer, primary_key=True)
+    id_ingreso = Column(
+        Integer, ForeignKey("ingreso_insumos.id_entrante"), nullable=False
+    )
+    sku_prenda = Column(
+        String(50),
+        ForeignKey("producto_comercial.sku_prenda"),
+        nullable=False,
+    )
+    id_produccion = Column(
+        Integer, ForeignKey("produccion.id_produccion"), nullable=True
+    )
+    cantidad_materia_prima = Column(Numeric(12, 2), nullable=False)
+    cantidad_prendas = Column(Integer, nullable=False)
+    observaciones = Column(Text)
+    id_usuario = Column(Integer, ForeignKey("usuario.id_usuario"), nullable=False)
+    fecha_registro = Column(DateTime, nullable=False, server_default=func.now())
 
 
 class Trazabilidad(Base):
@@ -164,7 +190,11 @@ class OrdenComercial(Base):
         ForeignKey('produccion.id_produccion'),
         primary_key=True,
     )
-    sku_prenda = Column(String(50), nullable=False)
+    sku_prenda = Column(
+        String(50),
+        ForeignKey('producto_comercial.sku_prenda'),
+        nullable=False,
+    )
     canal_destino = Column(String(20), nullable=False)
     costo_unitario_estimado = Column(Numeric(12, 2), nullable=False)
 
@@ -180,6 +210,13 @@ class EtapaProduccion(Base):
     id_area_nueva = Column(Integer, ForeignKey('area.id_area'), nullable=False)
     id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
     fecha_cambio = Column(DateTime, nullable=False, server_default=func.now())
+    estado = Column(
+        String(30),
+        nullable=False,
+        default="EN_PROCESO",
+        server_default="EN_PROCESO",
+    )
+    observaciones = Column(Text)
 
 
 class InventarioPrenda(Base):
@@ -189,7 +226,11 @@ class InventarioPrenda(Base):
     )
 
     id_inventario = Column(Integer, primary_key=True)
-    sku_prenda = Column(String(50), nullable=False)
+    sku_prenda = Column(
+        String(50),
+        ForeignKey('producto_comercial.sku_prenda'),
+        nullable=False,
+    )
     ubicacion = Column(String(30), nullable=False)
     cantidad = Column(Integer, nullable=False, default=0)
     costo_promedio = Column(Numeric(12, 2), nullable=False, default=0)
@@ -199,13 +240,18 @@ class MovimientoPrenda(Base):
     __tablename__ = 'movimiento_prenda'
 
     id_movimiento = Column(Integer, primary_key=True)
-    sku_prenda = Column(String(50), nullable=False)
+    sku_prenda = Column(
+        String(50),
+        ForeignKey('producto_comercial.sku_prenda'),
+        nullable=False,
+    )
     ubicacion = Column(String(30), nullable=False)
     tipo_movimiento = Column(String(30), nullable=False)
     cantidad = Column(Integer, nullable=False)
     costo_unitario = Column(Numeric(12, 2), nullable=False, default=0)
     referencia = Column(String(100))
     grupo_traslado = Column(String(36))
+    id_produccion = Column(Integer, ForeignKey('produccion.id_produccion'))
     id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
     fecha_movimiento = Column(DateTime, nullable=False, server_default=func.now())
 
@@ -227,6 +273,7 @@ class DetalleVenta(Base):
     id_detalle = Column(Integer, primary_key=True)
     id_venta = Column(Integer, ForeignKey('venta.id_venta'), nullable=False)
     sku_prenda = Column(String(50), nullable=False)
+    id_produccion = Column(Integer, ForeignKey('produccion.id_produccion'))
     cantidad = Column(Integer, nullable=False)
     precio_unitario = Column(Numeric(12, 2), nullable=False)
     costo_unitario = Column(Numeric(12, 2), nullable=False)

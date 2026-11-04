@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from backend.schemas.comercial_schema import (
     InventarioInicialPrendaCreate,
+    PedidoCreate,
     ProductoPreciosUpdate,
     TrasladoPrendaCreate,
     VentaCreate,
@@ -52,5 +53,15 @@ class ComercialController:
         return ComercialService.listar_ventas(db)
 
     @staticmethod
-    def registrar_venta(data: VentaCreate, db: Session, id_usuario: int):
-        return ComercialService.registrar_venta(data, db, id_usuario)
+    def registrar_venta(
+        data: VentaCreate | PedidoCreate,
+        db: Session,
+        id_usuario: int,
+        require_production_lot: bool = False,
+    ):
+        return ComercialService.registrar_venta(
+            data,
+            db,
+            id_usuario,
+            require_production_lot=require_production_lot,
+        )

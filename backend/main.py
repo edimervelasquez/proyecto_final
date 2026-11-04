@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,11 +15,13 @@ from backend.routes.calidad_routes import router as calidad_router
 from backend.routes.dashboard_routes import router as dashboard_router
 from backend.routes.produccion_routes import router as produccion_router
 from backend.routes.comercial_routes import router as comercial_router
+from backend.security import get_secret_key
 
 
 def create_app(database_engine: Engine = engine) -> FastAPI:
     @asynccontextmanager
-    async def lifespan(_application: FastAPI):
+    async def lifespan(_: FastAPI):
+        get_secret_key()
         initialize_database(database_engine)
         yield
 
@@ -33,6 +36,7 @@ def create_app(database_engine: Engine = engine) -> FastAPI:
         autoflush=False,
         bind=database_engine,
     )
+    application.state.session_factory = session_factory
 
     def get_application_db():
         session = session_factory()
@@ -43,9 +47,21 @@ def create_app(database_engine: Engine = engine) -> FastAPI:
 
     application.dependency_overrides[get_db] = get_application_db
     application.add_middleware(RequestMiddleware)
+    allowed_origins = [
+        origin.strip()
+        for origin in os.environ.get(
+            "CORS_ALLOWED_ORIGINS",
+            "http://localhost:5173,http://127.0.0.1:5173",
+        ).split(",")
+        if origin.strip()
+    ]
+    if not allowed_origins or "*" in allowed_origins:
+        raise ValueError(
+            "CORS_ALLOWED_ORIGINS debe contener orígenes explícitos, no '*'."
+        )
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 
-from backend.schemas.comercial_schema import EtapaProduccionUpdate
 from backend.schemas.produccion_schema import (
     AreaCreate,
+    ProcesoProduccionCreate,
     OrdenProduccionCreate,
     RetrasoProduccionCreate,
+    TrazoProduccionCreate,
 )
 from backend.services.produccion_service import ProduccionService
 from backend.services.retraso_service import RetrasoService
@@ -19,6 +20,18 @@ class ProduccionController:
         id_usuario: int,
     ):
         return ProduccionService.registrar_orden(data, db, id_usuario)
+
+    @staticmethod
+    def registrar_trazo(
+        data: TrazoProduccionCreate,
+        db: Session,
+        id_usuario: int,
+    ):
+        return ProduccionService.registrar_trazo(data, db, id_usuario)
+
+    @staticmethod
+    def listar_trazos(db: Session):
+        return ProduccionService.listar_trazos(db)
 
     @staticmethod
     def actividad_reciente(db: Session):
@@ -39,7 +52,7 @@ class ProduccionController:
     @staticmethod
     def avanzar_etapa(
         id_produccion: int,
-        data: EtapaProduccionUpdate,
+        data: ProcesoProduccionCreate,
         db: Session,
         id_usuario: int,
     ):
@@ -48,7 +61,12 @@ class ProduccionController:
             data.id_area_destino,
             db,
             id_usuario,
+            data.observaciones,
         )
+
+    @staticmethod
+    def listar_procesos(id_produccion: int, db: Session):
+        return ProduccionService.listar_procesos(id_produccion, db)
 
     @staticmethod
     def listar_retrasos(db: Session):

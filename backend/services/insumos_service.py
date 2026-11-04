@@ -83,9 +83,13 @@ class InsumosService:
                 "Recibido",
             )
             db.commit()
+            db.refresh(ingreso)
+            db.refresh(material)
             return {
                 "mensaje": "Ingreso de materia prima registrado correctamente.",
                 "id_ingreso": ingreso.id_entrante,
+                "id_materiaPrima": material.id_materiaPrima,
+                "nombre_material": material.nombre_material,
                 "nuevo_stock": material.Cantidad_materiaPrima,
             }
         except HTTPException:
@@ -108,6 +112,11 @@ class InsumosService:
                 status_code=409,
                 detail=f"Ya existe una ficha técnica para el SKU {sku}. Usa un SKU distinto.",
             )
+        if db.query(ProductoComercial).filter_by(sku_prenda=sku).first():
+            raise HTTPException(
+                status_code=409,
+                detail=f"Ya existe un producto comercial para el SKU {sku}.",
+            )
 
         materiales = []
         for insumo in data.insumos:
@@ -122,6 +131,17 @@ class InsumosService:
             materiales.append((insumo, material))
 
         try:
+            ficha = ProductoComercial(
+                sku_prenda=sku,
+                nombre_producto=data.nombre_producto or sku,
+                descripcion=data.descripcion,
+                costo_mano_obra=data.costo_mano_obra or 0,
+                precio_mayorista=data.precio_mayorista,
+                precio_detal=data.precio_detal,
+            )
+            db.add(ficha)
+            db.flush()
+
             costo_total_insumos = 0.0
             detalles_guardados = []
             for insumo, material in materiales:
@@ -148,15 +168,6 @@ class InsumosService:
                     "costo_estimado": costo_parcial,
                 })
 
-            ficha = ProductoComercial(
-                sku_prenda=sku,
-                nombre_producto=data.nombre_producto or sku,
-                descripcion=data.descripcion,
-                costo_mano_obra=data.costo_mano_obra or 0,
-                precio_mayorista=data.precio_mayorista,
-                precio_detal=data.precio_detal,
-            )
-            db.add(ficha)
             TrazabilidadRepository.registrar(
                 db,
                 "ficha_tecnica",
@@ -168,6 +179,7 @@ class InsumosService:
                 data.descripcion,
             )
             db.commit()
+            db.refresh(ficha)
             mano_obra = data.costo_mano_obra or 0
             return {
                 "mensaje": f"Ficha técnica para {sku} guardada con éxito.",

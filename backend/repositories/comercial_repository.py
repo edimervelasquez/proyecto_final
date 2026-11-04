@@ -69,6 +69,24 @@ class ComercialRepository:
         ).limit(limite).all()
 
     @staticmethod
+    def saldo_lote(
+        db: Session,
+        sku: str,
+        id_produccion: int,
+        ubicacion: str,
+    ) -> int:
+        return int(
+            db.query(func.coalesce(func.sum(MovimientoPrenda.cantidad), 0))
+            .filter(
+                MovimientoPrenda.sku_prenda == sku,
+                MovimientoPrenda.id_produccion == id_produccion,
+                MovimientoPrenda.ubicacion == ubicacion,
+            )
+            .scalar()
+            or 0
+        )
+
+    @staticmethod
     def crear_stock(db: Session, sku: str, ubicacion: str):
         stock = InventarioPrenda(
             sku_prenda=sku,

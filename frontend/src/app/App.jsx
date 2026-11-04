@@ -12,6 +12,7 @@ import GestionEmpleados from '../pages/users/GestionEmpleados';
 import Produccion from '../pages/production/Produccion';
 import '../styles/variable.css';
 import '../styles/global.css';
+import '../styles/theme.css';
 
 const normalizeUser = (data) => {
   const user = data.usuario || data;

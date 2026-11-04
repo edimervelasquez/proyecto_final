@@ -1,24 +1,48 @@
 :root {
-  /* Paleta Dark Premium (Negro y Dorado) */
-  --bg-main: #0a0a0a;          /* Negro profundo de fondo */
-  --bg-card: #121212;          /* Negro suave para tarjetas */
-  --bg-input: #1a1a1a;         /* Gris oscuro para inputs */
-  
-  /* Gradiente y Tonos Dorados */
-  --gold-primary: #d4af37;     /* Dorado clásico */
-  --gold-light: #f3e5ab;       /* Dorado claro para brillos */
-  --gold-hover: #b89628;       /* Dorado oscuro para interactividad */
-  --gold-gradient: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #aa7c11 100%);
-
-  /* Textos */
-  --text-primary: #f8fafc;     /* Blanco puro */
-  --text-secondary: #a1a1aa;   /* Gris medio */
-  --text-gold: #eab308;        /* Texto de acento */
-
-  /* Bordes, Sombras y Brillos */
-  --border-gold: rgba(212, 175, 55, 0.3);
-  --border-gold-focus: #d4af37;
+  color-scheme: light;
+  --color-brand-950: #173c68;
+  --color-brand-900: #214f80;
+  --color-brand-800: #326ba5;
+  --color-teal-700: #3478c8;
+  --color-teal-600: #4a8bd1;
+  --color-teal-100: #e7f2ff;
+  --color-amber-700: #9a6814;
+  --color-amber-500: #c28a2a;
+  --color-amber-100: #fff6df;
+  --color-bg: #f3f8ff;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8fbff;
+  --color-text: #233e5d;
+  --color-text-soft: #5e7590;
+  --color-text-muted: #8296aa;
+  --color-border: #d7e4f2;
+  --color-border-strong: #bfd2e7;
+  --color-success: #216b42;
+  --color-success-soft: #effaf3;
+  --color-warning: #94620f;
+  --color-warning-soft: #fff7e7;
+  --color-danger: #a33b43;
+  --color-danger-soft: #fff1f1;
+  --color-info: #2563a6;
+  --color-info-soft: #edf5ff;
+  --shadow-card: 0 8px 24px rgba(35, 75, 120, 0.08);
   --radius-sm: 8px;
   --radius-md: 14px;
-  --shadow-gold: 0 0 25px rgba(212, 175, 55, 0.15);
+  --radius-lg: 20px;
+
+  --bg-main: var(--color-bg);
+  --bg-card: var(--color-surface);
+  --bg-input: var(--color-surface-soft);
+  --gold-primary: var(--color-teal-700);
+  --gold-light: #a8ccef;
+  --gold-hover: #2867b2;
+  --gold-gradient: linear-gradient(120deg, #3478c8, #4a8bd1);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-text-soft);
+  --text-gold: var(--color-teal-700);
+  --border-gold: rgba(52, 120, 200, 0.22);
+  --border-gold-focus: var(--color-teal-700);
+  --shadow-gold: 0 8px 20px rgba(52, 120, 200, 0.14);
+  --border-color: var(--color-border-strong);
+  --primary-accent: var(--color-teal-700);
 }

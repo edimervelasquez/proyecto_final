@@ -85,56 +85,88 @@ export default function Dashboard() {
       : `${registro.minutos_detenida} min`,
   }));
 
-  const metricas = resumen ? [
-    { titulo: 'Referencias de insumos', valor: resumen.insumos_catalogo, icono: <Package size={24} /> },
-    { titulo: 'Insumos bajo mínimo', valor: resumen.insumos_bajo_minimo, icono: <Package size={24} /> },
-    { titulo: 'Unidades en inventario', valor: resumen.unidades_inventario, icono: <ClipboardList size={24} /> },
-    { titulo: 'Órdenes activas', valor: resumen.ordenes_activas, icono: <Scissors size={24} /> },
-    { titulo: 'Aprobación de calidad', valor: `${resumen.aprobacion_calidad}%`, icono: <CheckCircle size={24} /> },
-    { titulo: 'Operarios activos', valor: resumen.operarios_activos, icono: <Users size={24} /> },
-    { titulo: 'Ingresos de insumos', valor: resumen.ingresos_registrados, icono: <DollarSign size={24} /> },
-    { titulo: 'Valor registrado de insumos', valor: formatoCOP(resumen.valor_insumos_recibidos), icono: <DollarSign size={24} /> },
-    { titulo: 'Retrasos abiertos', valor: resumen.retrasos_abiertos, icono: <ClipboardList size={24} /> },
+  const gruposMetricas = resumen ? [
     {
-      titulo: 'Tiempo perdido por retrasos',
-      valor: `${Math.floor(resumen.tiempo_perdido_minutos / 60)} h ${resumen.tiempo_perdido_minutos % 60} min`,
-      icono: <Scissors size={24} />,
+      titulo: 'Inventario y producción',
+      metricas: [
+        { titulo: 'Referencias de insumos', valor: resumen.insumos_catalogo, icono: <Package size={22} /> },
+        { titulo: 'Insumos bajo mínimo', valor: resumen.insumos_bajo_minimo, icono: <Package size={22} /> },
+        { titulo: 'Unidades en inventario', valor: resumen.unidades_inventario, icono: <ClipboardList size={22} /> },
+        { titulo: 'Órdenes activas', valor: resumen.ordenes_activas, icono: <Scissors size={22} /> },
+      ],
     },
-    { titulo: 'Ventas totales', valor: formatoCOP(resumen.finanzas?.ventas_totales), icono: <DollarSign size={24} /> },
-    { titulo: 'Ventas mayoristas', valor: formatoCOP(resumen.finanzas?.ventas_mayoristas), icono: <DollarSign size={24} /> },
-    { titulo: 'Ventas al detal', valor: formatoCOP(resumen.finanzas?.ventas_detal), icono: <DollarSign size={24} /> },
-    { titulo: 'Costo de prendas vendidas', valor: formatoCOP(resumen.finanzas?.costo_productos_vendidos), icono: <Package size={24} /> },
-    { titulo: 'Margen bruto', valor: formatoCOP(resumen.finanzas?.margen_bruto), icono: <TrendingUp size={24} /> },
-    { titulo: 'Pérdida estimada por calidad', valor: formatoCOP(resumen.finanzas?.perdida_estimada_calidad), icono: <Scissors size={24} /> },
-    { titulo: 'Margen después de rechazos', valor: formatoCOP(resumen.finanzas?.margen_despues_rechazos), icono: <TrendingUp size={24} /> },
+    {
+      titulo: 'Calidad y operación',
+      metricas: [
+        { titulo: 'Aprobación de calidad', valor: `${resumen.aprobacion_calidad}%`, icono: <CheckCircle size={22} /> },
+        { titulo: 'Operarios activos', valor: resumen.operarios_activos, icono: <Users size={22} /> },
+        { titulo: 'Ingresos de insumos', valor: resumen.ingresos_registrados, icono: <Package size={22} /> },
+        { titulo: 'Valor registrado de insumos', valor: formatoCOP(resumen.valor_insumos_recibidos), icono: <DollarSign size={22} /> },
+        { titulo: 'Retrasos abiertos', valor: resumen.retrasos_abiertos, icono: <ClipboardList size={22} /> },
+        {
+          titulo: 'Tiempo perdido por retrasos',
+          valor: `${Math.floor(resumen.tiempo_perdido_minutos / 60)} h ${resumen.tiempo_perdido_minutos % 60} min`,
+          icono: <Scissors size={22} />,
+        },
+      ],
+    },
+    {
+      titulo: 'Resumen financiero',
+      metricas: [
+        { titulo: 'Ventas totales', valor: formatoCOP(resumen.finanzas?.ventas_totales), icono: <DollarSign size={22} /> },
+        { titulo: 'Ventas mayoristas', valor: formatoCOP(resumen.finanzas?.ventas_mayoristas), icono: <DollarSign size={22} /> },
+        { titulo: 'Ventas al detal', valor: formatoCOP(resumen.finanzas?.ventas_detal), icono: <DollarSign size={22} /> },
+        { titulo: 'Costo de prendas vendidas', valor: formatoCOP(resumen.finanzas?.costo_productos_vendidos), icono: <Package size={22} /> },
+        { titulo: 'Margen bruto', valor: formatoCOP(resumen.finanzas?.margen_bruto), icono: <TrendingUp size={22} /> },
+        { titulo: 'Pérdida estimada por calidad', valor: formatoCOP(resumen.finanzas?.perdida_estimada_calidad), icono: <Scissors size={22} /> },
+        { titulo: 'Margen después de rechazos', valor: formatoCOP(resumen.finanzas?.margen_despues_rechazos), icono: <TrendingUp size={22} /> },
+      ],
+    },
   ] : [];
 
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-title">Panel de Control Principal</h1>
-      <button
-        type="button"
-        className="dashboard-refresh"
-        onClick={actualizar}
-        disabled={cargando}
-      >
-        {cargando ? 'Actualizando...' : 'Actualizar información'}
-      </button>
+      <header className="dashboard-header">
+        <div>
+          <p className="dashboard-eyebrow">SIES Textil</p>
+          <h1 className="dashboard-title">Panel de control</h1>
+          <p className="dashboard-subtitle">Resumen de inventario, producción y resultados del taller.</p>
+        </div>
+        <button
+          type="button"
+          className="dashboard-refresh"
+          onClick={actualizar}
+          disabled={cargando}
+        >
+          {cargando ? 'Actualizando...' : 'Actualizar información'}
+        </button>
+      </header>
       {cargando && <p role="status">Cargando información real del sistema...</p>}
       {error && <p className="trazabilidad-error" role="alert">{error}</p>}
       {!cargando && !error && resumen && (
         <>
-          <div className="metrics-grid">
-            {metricas.map((metrica) => (
-              <div className="metric-card" key={metrica.titulo}>
-                <div className="card-icon gold">{metrica.icono}</div>
-                <div className="card-info">
-                  <span className="card-title">{metrica.titulo}</span>
-                  <h2 className="card-value">{metrica.valor}</h2>
-                </div>
+          {gruposMetricas.map((grupo, indice) => (
+            <section
+              className="dashboard-metric-section"
+              key={grupo.titulo}
+              aria-labelledby={`dashboard-metrics-${indice}`}
+            >
+              <h2 id={`dashboard-metrics-${indice}`} className="dashboard-section-title">
+                {grupo.titulo}
+              </h2>
+              <div className="metrics-grid">
+                {grupo.metricas.map((metrica) => (
+                  <article className="metric-card" key={metrica.titulo}>
+                    <div className="card-icon gold">{metrica.icono}</div>
+                    <div className="card-info">
+                      <span className="card-title">{metrica.titulo}</span>
+                      <h3 className="card-value">{metrica.valor}</h3>
+                    </div>
+                  </article>
+                ))}
               </div>
-            ))}
-          </div>
+            </section>
+          ))}
 
           <section className="dashboard-stock-alerts" aria-labelledby="stock-alerts-title">
             <h2 id="stock-alerts-title">Alertas de materia prima</h2>

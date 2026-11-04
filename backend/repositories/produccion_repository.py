@@ -4,11 +4,13 @@ from sqlalchemy.orm import aliased
 
 from backend.models.models import (
     Area,
+    EtapaProduccion,
     FichaTecnicaInsumo,
     IngresoInsumos,
     MateriaPrima,
     Produccion,
     RetrasoProduccion,
+    TrazoProduccion,
     Usuario,
 )
 
@@ -44,6 +46,77 @@ class ProduccionRepository:
             db.query(IngresoInsumos)
             .order_by(IngresoInsumos.id_entrante.desc())
             .first()
+        )
+
+    @staticmethod
+    def obtener_ingreso(db: Session, id_ingreso: int, lock: bool = False):
+        query = db.query(IngresoInsumos).filter(
+            IngresoInsumos.id_entrante == id_ingreso
+        )
+        return query.with_for_update().first() if lock else query.first()
+
+    @staticmethod
+    def obtener_trazo(db: Session, id_trazo: int, lock: bool = False):
+        query = db.query(TrazoProduccion).filter(
+            TrazoProduccion.id_trazo == id_trazo
+        )
+        return query.with_for_update().first() if lock else query.first()
+
+    @staticmethod
+    def obtener_trazos_por_ids(db: Session, ids_trazos: list[int], lock: bool = False):
+        query = db.query(TrazoProduccion).filter(
+            TrazoProduccion.id_trazo.in_(ids_trazos)
+        )
+        return query.with_for_update().all() if lock else query.all()
+
+    @staticmethod
+    def registrar_trazo(db: Session, data: dict):
+        trazo = TrazoProduccion(**data)
+        db.add(trazo)
+        return trazo
+
+    @staticmethod
+    def trazos_por_ingreso(db: Session, id_ingreso: int):
+        return (
+            db.query(TrazoProduccion)
+            .filter(TrazoProduccion.id_ingreso == id_ingreso)
+            .all()
+        )
+
+    @staticmethod
+    def trazos_pendientes_por_material(db: Session, id_materia_prima: int):
+        return (
+            db.query(TrazoProduccion)
+            .join(
+                IngresoInsumos,
+                IngresoInsumos.id_entrante == TrazoProduccion.id_ingreso,
+            )
+            .filter(
+                IngresoInsumos.id_materiaPrima == id_materia_prima,
+                TrazoProduccion.id_produccion.is_(None),
+            )
+            .all()
+        )
+
+    @staticmethod
+    def listar_trazos(db: Session, limite: int = 100):
+        return (
+            db.query(
+                TrazoProduccion,
+                IngresoInsumos.id_materiaPrima,
+                MateriaPrima.nombre_material,
+            )
+            .join(
+                IngresoInsumos,
+                IngresoInsumos.id_entrante == TrazoProduccion.id_ingreso,
+            )
+            .join(
+                MateriaPrima,
+                MateriaPrima.id_materiaPrima == IngresoInsumos.id_materiaPrima,
+            )
+            .order_by(TrazoProduccion.id_trazo.desc())
+            .limit(limite)
+            .all()
         )
 
     @staticmethod
@@ -91,6 +164,29 @@ class ProduccionRepository:
         return (
             db.query(Produccion)
             .filter(Produccion.id_produccion == id_produccion)
+            .first()
+        )
+
+    @staticmethod
+    def obtener_procesos(db: Session, id_produccion: int):
+        return (
+            db.query(EtapaProduccion, Area.nombre_area, Usuario.empleado)
+            .join(Area, Area.id_area == EtapaProduccion.id_area_nueva)
+            .join(Usuario, Usuario.id_usuario == EtapaProduccion.id_usuario)
+            .filter(EtapaProduccion.id_produccion == id_produccion)
+            .order_by(EtapaProduccion.id_etapa)
+            .all()
+        )
+
+    @staticmethod
+    def obtener_etapa_activa(db: Session, id_produccion: int):
+        return (
+            db.query(EtapaProduccion)
+            .filter(
+                EtapaProduccion.id_produccion == id_produccion,
+                EtapaProduccion.estado == "EN_PROCESO",
+            )
+            .order_by(EtapaProduccion.id_etapa.desc())
             .first()
         )
 

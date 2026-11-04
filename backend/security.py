@@ -6,9 +6,6 @@ import os
 import time
 from typing import Any, Dict
 
-from backend.config import Config
-
-
 TOKEN_TTL_SECONDS = 60 * 60
 
 
@@ -20,8 +17,12 @@ def _decode(value: str) -> bytes:
     return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
 
 
-def _secret() -> bytes:
-    return (os.environ.get("SECRET_KEY") or Config.SECRET_KEY).encode("utf-8")
+def get_secret_key() -> bytes:
+    secret = os.environ.get("SECRET_KEY", "")
+    secret_bytes = secret.encode("utf-8")
+    if len(secret_bytes) < 32:
+        raise RuntimeError("SECRET_KEY debe configurarse con al menos 32 bytes.")
+    return secret_bytes
 
 
 def create_access_token(user_id: int, role: str) -> str:
@@ -36,7 +37,7 @@ def create_access_token(user_id: int, role: str) -> str:
         ).encode("utf-8")
     )
     content = f"{header}.{payload}".encode("ascii")
-    signature = _encode(hmac.new(_secret(), content, hashlib.sha256).digest())
+    signature = _encode(hmac.new(get_secret_key(), content, hashlib.sha256).digest())
     return f"{header}.{payload}.{signature}"
 
 
@@ -47,7 +48,7 @@ def validate_access_token(token: str) -> Dict[str, Any]:
 
     content = f"{parts[0]}.{parts[1]}".encode("ascii")
     expected_signature = _encode(
-        hmac.new(_secret(), content, hashlib.sha256).digest()
+        hmac.new(get_secret_key(), content, hashlib.sha256).digest()
     )
     if not hmac.compare_digest(parts[2], expected_signature):
         raise ValueError("Token inválido.")

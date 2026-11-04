@@ -26,18 +26,19 @@ BACKEND (FastAPI)
 
    CREATE DATABASE yullita_creaciones;
 
-5. Revisar backend/config.py y confirmar que la conexión apunte a esa base
-   de datos y que root y TU_CONTRASEÑA correspondan al usuario y contraseña
-   de MySQL de ese equipo:
+5. Si tu usuario o contraseña de MySQL son diferentes a la conexión por
+   defecto, agrega la URL de tu base de datos al archivo `.env` que crea el
+   backend la primera vez que se ejecuta. No guardes ese archivo en Git:
 
-   SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:TU_CONTRASEÑA@localhost/yullita_creaciones'
-
-   No cambies el nombre de la base a yullita_creaciones_db, salvo que también
-   cambies el nombre al final de la conexión en backend/config.py.
+   DATABASE_URL=mysql+pymysql://root:TU_CONTRASEÑA@localhost/yullita_creaciones
 
 6. Desde la carpeta raíz del proyecto, arrancar el backend:
 
    python app.py
+
+   En el primer inicio se crea automáticamente `.env` con claves seguras y
+   orígenes locales. No borres ni regeneres `SECRET_KEY`: los tokens activos
+   dejarían de funcionar.
 
    El backend está hecho con FastAPI y quedará disponible en:
 
@@ -77,12 +78,26 @@ El frontend se conecta por defecto al backend en http://127.0.0.1:8000/api.
 
 PRIMER INICIO DE SESIÓN
 
-Si la base de datos está vacía, regístrate desde la pantalla de inicio.
-La primera cuenta registrada queda activa como administradora. Las cuentas
-registradas después quedan pendientes de aprobación. Al registrarse se puede
-solicitar el rol de trabajador o vendedor; nunca se puede solicitar el de
-administrador. El administrador activa las cuentas pendientes y administra
-sus roles desde Gestión de Usuarios.
+Antes del primer acceso administrativo, crea la primera cuenta administradora
+desde `POST /api/auth/bootstrap-admin` en `/docs`. Copia el valor
+`INITIAL_ADMIN_TOKEN` desde `.env` y envíalo en la cabecera
+`X-Initial-Admin-Token`, junto con `empleado`, `correo`, `contrasenia` (mínimo
+12 caracteres) y `cedula`. Esta operación se bloquea después de crear un
+usuario administrador. El archivo `.env` ya está excluido de Git; mantenlo
+privado.
+
+El registro público solo crea cuentas pendientes de aprobación con rol de
+trabajador o vendedor; nunca crea administradores. El administrador activa las
+cuentas pendientes y administra sus roles desde Gestión de Usuarios.
+
+Para pruebas locales exclusivamente, puedes permitir contraseñas más cortas
+agregando APP_ENV=development y PASSWORD_MIN_LENGTH=4 al `.env`, y reiniciando
+el backend. Fuera de development el mínimo de 12 caracteres no se puede bajar.
+No uses esta configuración en producción.
+
+En producción, configura `CORS_ALLOWED_ORIGINS` con los orígenes exactos del
+frontend, separados por comas. No uses `*` junto con credenciales.
+Publica la API únicamente detrás de HTTPS.
 
 
 TRAZABILIDAD Y DASHBOARD
@@ -107,6 +122,68 @@ En Producción, el trabajador o administrador puede iniciar un retraso en una
 orden activa. La orden conserva su área y muestra una alerta hasta que un
 trabajador o administrador la reanude. El sistema calcula el tiempo detenido
 y conserva motivo, área, fechas y responsables en el historial y el dashboard.
+
+SECUENCIA DE PRODUCCIÓN EN SWAGGER
+
+1. Inicia sesión con POST /api/auth/login y copia el access_token.
+2. En Swagger, pulsa Authorize y pega el token Bearer.
+3. Registra la materia prima con POST /api/insumos/ingreso. La respuesta
+   incluye `id_ingreso` e `id_materiaPrima`; conserva esos identificadores.
+4. Crea la ficha/prenda con POST /api/insumos/ficha-tecnica, usando el mismo
+   `id_materiaPrima` en el insumo de la receta y definiendo su SKU, nombre,
+   cantidad estimada, precios y costo de mano de obra.
+5. Registra un trazo por material/ingreso con POST /api/produccion/trazos.
+   El trazo registra la cantidad que se usará y el lote que se va a cortar;
+   no descuenta inventario todavía. La cantidad de cada trazo debe
+   corresponder a la ficha técnica multiplicada por la cantidad de prendas.
+
+   {
+     "id_ingreso": 1,
+     "sku_prenda": "SKU-DE-LA-FICHA",
+     "cantidad_materia_prima": 10,
+     "cantidad_prendas": 10,
+     "observaciones": "Tela reservada para este lote."
+   }
+
+   Guarda el `id_trazo` devuelto. Consulta GET /api/produccion/trazos para
+   ver los trazos registrados y si ya quedaron asociados a una orden.
+6. Consulta GET /api/produccion/areas para obtener el id_area de Corte.
+7. Crea la orden con POST /api/produccion/ordenes. Envía los identificadores
+   de todos los trazos del lote en `id_trazos`; la orden valida que el SKU,
+   cantidad de prendas y materiales coincidan con los trazos y la ficha.
+
+   {
+     "id_area": 1,
+     "sku_prenda": "SKU-DE-LA-FICHA",
+     "cantidad_a_producir": 10,
+     "fecha_entrega": "2026-11-20",
+     "canal_destino": "DETAL",
+     "observaciones": "Tela verificada al iniciar.",
+     "id_trazos": [1]
+   }
+
+   Usa los identificadores reales devueltos por los pasos anteriores. La
+   creación de la orden consume el stock una sola vez y vincula los trazos
+   con el lote de producción.
+8. Avanza la orden con POST
+   /api/produccion/ordenes/{id_produccion}/avanzar. Envía el id_area_destino
+   de la siguiente etapa indicada por GET /api/produccion/areas y, si aplica,
+   observaciones sobre la etapa que se está completando:
+
+   {
+     "id_area_destino": 2,
+     "observaciones": "Corte terminado y revisado."
+   }
+9. Consulta GET /api/produccion/ordenes/{id_produccion}/procesos para ver el
+   historial con etapa, estado (EN_PROCESO o COMPLETADO), fecha, operario y
+   observaciones. El control de calidad finaliza la etapa cuando se inspecciona
+   todo el lote. Luego registra el pedido por lote con POST /api/pedidos,
+   indicando el SKU, la cantidad y el mismo `id_produccion`; las prendas
+   deben estar aprobadas por calidad y disponibles en la ubicación de venta.
+
+La ruta anterior POST /api/produccion/orden sigue disponible para clientes
+existentes. Para órdenes nuevas que necesiten trazabilidad desde el ingreso,
+usa POST /api/produccion/ordenes y envía `id_trazos`.
 
 FLUJO DE PRODUCCIÓN, INVENTARIO Y VENTAS
 
@@ -135,6 +212,30 @@ mayoristas descuentan de Bodega mayorista; las ventas al detal descuentan de
 Local/tienda. El trabajador no puede acceder a ventas ni inventario comercial;
 el vendedor puede consultar existencias y registrar ventas, pero no puede
 realizar traslados ni administrar precios.
+
+Para registrar una venta con trazabilidad por lote, usa POST `/api/pedidos`.
+Cada detalle debe incluir el `id_produccion` cuya orden generó las prendas.
+La orden debe corresponder al SKU y tener unidades aprobadas disponibles en la
+ubicación de venta. Los traslados pueden conservar la trazabilidad indicando
+también el `id_produccion`. POST `/api/ventas` sigue disponible para las ventas
+anteriores que no tienen un lote asociado.
+
+Ejemplo de pedido:
+
+   {
+     "canal": "DETAL",
+     "cliente": "Cliente de prueba",
+     "detalles": [
+       {
+         "sku_prenda": "SKU-DE-LA-FICHA",
+         "cantidad": 2,
+         "id_produccion": 1
+       }
+     ]
+   }
+
+La respuesta incluye `id_venta`; consulta GET `/api/ventas` para revisar sus
+líneas y el lote que quedó registrado.
 
 El dashboard financiero presenta ventas, costo estimado de prendas vendidas,
 margen estimado y pérdida estimada por rechazos. No es utilidad neta: no

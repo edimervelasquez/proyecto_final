@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from backend.repositories.calidad_repository import CalidadRepository
 from backend.repositories.trazabilidad_repository import TrazabilidadRepository
 from backend.services.comercial_service import ComercialService
-from backend.models.models import Area
+from backend.models.models import Area, EtapaProduccion
 
 
 class CalidadService:
@@ -78,6 +78,30 @@ class CalidadService:
             if cantidad_previa + data.cantidad_optima + data.cantidad_defectuosa == orden.cantidad_recibida:
                 estado = "Finalizada"
                 proceso = "Control de calidad"
+                etapa_calidad = (
+                    db.query(EtapaProduccion)
+                    .filter(
+                        EtapaProduccion.id_produccion == data.id_produccion,
+                        EtapaProduccion.id_area_nueva == orden.id_area,
+                        EtapaProduccion.estado == "EN_PROCESO",
+                    )
+                    .order_by(EtapaProduccion.id_etapa.desc())
+                    .first()
+                )
+                if etapa_calidad:
+                    etapa_calidad.estado = "COMPLETADO"
+                    etapa_calidad.id_usuario = id_usuario
+                    resumen_inspeccion = (
+                        f"Inspección finalizada: {cantidad_previa + data.cantidad_optima} "
+                        f"aprobadas y "
+                        f"{cantidad_previa + data.cantidad_defectuosa} defectuosas."
+                    )
+                    etapa_calidad.observaciones = " ".join(
+                        filter(
+                            None,
+                            (etapa_calidad.observaciones, resumen_inspeccion, data.observaciones),
+                        )
+                    )
             else:
                 estado = "Inspección parcial"
                 proceso = "Control de calidad"

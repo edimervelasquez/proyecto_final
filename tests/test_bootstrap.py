@@ -3,11 +3,13 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session
 
 from backend.bootstrap import STANDARD_AREAS, STANDARD_ROLES, initialize_database
+from backend.config import initialize_environment
 from backend.models.models import Area, Rol
 
 
@@ -66,6 +68,67 @@ class DatabaseBootstrapTests(unittest.TestCase):
             )).scalar_one()
         self.assertEqual(minimum, 0)
 
+    def test_bootstrap_adds_process_fields_to_legacy_production_stages(self):
+        with self.engine.begin() as connection:
+            connection.execute(text(
+                "CREATE TABLE etapa_produccion ("
+                "id_etapa INTEGER PRIMARY KEY, "
+                "id_produccion INTEGER NOT NULL, "
+                "id_area_anterior INTEGER, "
+                "id_area_nueva INTEGER NOT NULL, "
+                "id_usuario INTEGER NOT NULL, "
+                "fecha_cambio DATETIME NOT NULL)"
+            ))
+            connection.execute(text(
+                "INSERT INTO etapa_produccion "
+                "(id_etapa, id_produccion, id_area_nueva, id_usuario, fecha_cambio) "
+                "VALUES (1, 1, 1, 1, '2026-01-01 10:00:00')"
+            ))
+
+        initialize_database(self.engine)
+
+        columns = {
+            column["name"]
+            for column in inspect(self.engine).get_columns("etapa_produccion")
+        }
+        self.assertIn("estado", columns)
+        self.assertIn("observaciones", columns)
+        with self.engine.connect() as connection:
+            state = connection.execute(text(
+                "SELECT estado FROM etapa_produccion WHERE id_etapa = 1"
+            )).scalar_one()
+        self.assertEqual(state, "COMPLETADO")
+
+    def test_bootstrap_adds_nullable_production_links_to_legacy_sales_tables(self):
+        with self.engine.begin() as connection:
+            connection.execute(text(
+                "CREATE TABLE detalle_venta ("
+                "id_detalle INTEGER PRIMARY KEY, "
+                "id_venta INTEGER NOT NULL, "
+                "sku_prenda VARCHAR(50) NOT NULL)"
+            ))
+            connection.execute(text(
+                "CREATE TABLE movimiento_prenda ("
+                "id_movimiento INTEGER PRIMARY KEY, "
+                "sku_prenda VARCHAR(50) NOT NULL)"
+            ))
+
+        initialize_database(self.engine)
+        initialize_database(self.engine)
+
+        for table_name in ("detalle_venta", "movimiento_prenda"):
+            columns = {
+                column["name"]
+                for column in inspect(self.engine).get_columns(table_name)
+            }
+            self.assertIn("id_produccion", columns)
+            foreign_keys = inspect(self.engine).get_foreign_keys(table_name)
+            self.assertTrue(any(
+                key.get("referred_table") == "produccion"
+                and key.get("constrained_columns") == ["id_produccion"]
+                for key in foreign_keys
+            ))
+
     def test_importing_application_does_not_connect_or_create_schema(self):
         with tempfile.TemporaryDirectory() as directory:
             database_path = os.path.join(directory, "not-created-on-import.db")
@@ -85,6 +148,26 @@ class DatabaseBootstrapTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertFalse(os.path.exists(database_path))
+
+    def test_environment_secrets_are_created_once_and_reused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / ".env"
+            environment = {}
+
+            initialize_environment(env_file, environment)
+            first_secret = environment["SECRET_KEY"]
+            first_admin_token = environment["INITIAL_ADMIN_TOKEN"]
+            self.assertGreaterEqual(len(first_secret.encode("utf-8")), 32)
+            self.assertGreaterEqual(len(first_admin_token.encode("utf-8")), 32)
+            self.assertIn("CORS_ALLOWED_ORIGINS=", env_file.read_text())
+
+            loaded_environment = {}
+            initialize_environment(env_file, loaded_environment)
+            self.assertEqual(loaded_environment["SECRET_KEY"], first_secret)
+            self.assertEqual(
+                loaded_environment["INITIAL_ADMIN_TOKEN"],
+                first_admin_token,
+            )
 
 
 if __name__ == "__main__":

@@ -5,7 +5,12 @@ from sqlalchemy.orm import sessionmaker
 from backend.database import Base, engine
 from backend.models.models import (
     Area,
+    EtapaProduccion,
     FichaTecnicaInsumo,
+    InventarioPrenda,
+    MovimientoPrenda,
+    OrdenComercial,
+    Produccion,
     ProductoComercial,
     Rol,
     Trazabilidad,
@@ -23,6 +28,60 @@ STANDARD_AREAS = ("Corte", "Confección", "Estampado", "Calidad y Empaque")
 def _ensure_schema_compatibility(database_engine: Engine):
     inspector = inspect(database_engine)
     tables = set(inspector.get_table_names())
+
+    for table_name in ("detalle_venta", "movimiento_prenda"):
+        columns = {
+            column["name"]
+            for column in inspector.get_columns(table_name)
+        }
+        foreign_keys = inspector.get_foreign_keys(table_name)
+        has_production_fk = any(
+            foreign_key.get("referred_table") == "produccion"
+            and foreign_key.get("constrained_columns") == ["id_produccion"]
+            for foreign_key in foreign_keys
+        )
+        if "id_produccion" not in columns:
+            with database_engine.begin() as connection:
+                if database_engine.dialect.name == "sqlite":
+                    connection.execute(text(
+                        f"ALTER TABLE {table_name} ADD COLUMN id_produccion "
+                        "INTEGER REFERENCES produccion (id_produccion)"
+                    ))
+                elif database_engine.dialect.name == "mysql":
+                    connection.execute(text(
+                        f"ALTER TABLE {table_name} "
+                        "ADD COLUMN id_produccion INTEGER NULL"
+                    ))
+                else:
+                    raise RuntimeError(
+                        "La migración de trazabilidad de pedidos solo está "
+                        "implementada para SQLite y MySQL."
+                    )
+            inspector = inspect(database_engine)
+            foreign_keys = inspector.get_foreign_keys(table_name)
+            has_production_fk = any(
+                foreign_key.get("referred_table") == "produccion"
+                and foreign_key.get("constrained_columns") == ["id_produccion"]
+                for foreign_key in foreign_keys
+            )
+
+        if not has_production_fk:
+            if database_engine.dialect.name == "mysql":
+                with database_engine.begin() as connection:
+                    connection.execute(text(
+                        f"ALTER TABLE {table_name} "
+                        f"ADD CONSTRAINT fk_{table_name}_produccion "
+                        "FOREIGN KEY (id_produccion) "
+                        "REFERENCES produccion (id_produccion)"
+                    ))
+            elif database_engine.dialect.name == "sqlite":
+                raise RuntimeError(
+                    f"La tabla {table_name} ya tiene id_produccion pero no "
+                    "la llave foránea a produccion. Migra esa tabla "
+                    "manualmente antes de iniciar la aplicación."
+                )
+
+        inspector = inspect(database_engine)
 
     if "stock_minimo" not in {
         column["name"]
@@ -57,6 +116,71 @@ def _ensure_schema_compatibility(database_engine: Engine):
                 )
             )
 
+    if "etapa_produccion" in tables:
+        stage_columns = {
+            column["name"]
+            for column in inspector.get_columns("etapa_produccion")
+        }
+        with database_engine.begin() as connection:
+            if "estado" not in stage_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE etapa_produccion "
+                        "ADD COLUMN estado VARCHAR(30) "
+                        "NOT NULL DEFAULT 'COMPLETADO'"
+                    )
+                )
+            if "observaciones" not in stage_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE etapa_produccion "
+                        "ADD COLUMN observaciones TEXT"
+                    )
+                )
+
+
+def _ensure_product_sku_foreign_keys(database_engine: Engine):
+    if database_engine.dialect.name != "mysql":
+        return
+
+    inspector = inspect(database_engine)
+    for table_name in (
+        "ficha_tecnica_insumo",
+        "orden_comercial",
+        "inventario_prenda",
+        "movimiento_prenda",
+    ):
+        has_product_fk = any(
+            foreign_key.get("referred_table") == "producto_comercial"
+            and foreign_key.get("constrained_columns") == ["sku_prenda"]
+            for foreign_key in inspector.get_foreign_keys(table_name)
+        )
+        if has_product_fk:
+            continue
+
+        with database_engine.connect() as connection:
+            orphan_count = connection.execute(text(
+                f"SELECT COUNT(*) FROM {table_name} child "
+                "LEFT JOIN producto_comercial product "
+                "ON product.sku_prenda = child.sku_prenda "
+                "WHERE product.sku_prenda IS NULL"
+            )).scalar_one()
+        if orphan_count:
+            raise RuntimeError(
+                f"No se puede agregar la llave foranea de {table_name}. "
+                f"Hay {orphan_count} SKU sin producto comercial asociado; "
+                "corrige o registra esos productos y reinicia el backend."
+            )
+
+        with database_engine.begin() as connection:
+            connection.execute(text(
+                f"ALTER TABLE {table_name} "
+                f"ADD CONSTRAINT fk_{table_name}_producto_sku "
+                "FOREIGN KEY (sku_prenda) "
+                "REFERENCES producto_comercial (sku_prenda)"
+            ))
+        inspector = inspect(database_engine)
+
 
 def initialize_database(
     database_engine: Engine = engine,
@@ -76,6 +200,20 @@ def initialize_database(
             area = db.query(Area).filter(Area.nombre_area == area_name).first()
             if area is None:
                 db.add(Area(nombre_area=area_name))
+        db.commit()
+
+        for order in db.query(Produccion).all():
+            active_stage = (
+                db.query(EtapaProduccion)
+                .filter(
+                    EtapaProduccion.id_produccion == order.id_produccion,
+                    EtapaProduccion.id_area_nueva == order.id_area,
+                )
+                .order_by(EtapaProduccion.id_etapa.desc())
+                .first()
+            )
+            if active_stage is not None:
+                active_stage.estado = "EN_PROCESO"
         db.commit()
 
         skus = {
@@ -98,4 +236,25 @@ def initialize_database(
                 precio_detal=0,
                 activo=1,
             ))
+        for model in (
+            OrdenComercial,
+            InventarioPrenda,
+            MovimientoPrenda,
+        ):
+            for (sku,) in db.query(model.sku_prenda).distinct().all():
+                if db.query(ProductoComercial).filter_by(
+                    sku_prenda=sku
+                ).first():
+                    continue
+                db.add(ProductoComercial(
+                    sku_prenda=sku,
+                    nombre_producto=sku,
+                    descripcion="Producto legado vinculado a inventario o producción.",
+                    costo_mano_obra=0,
+                    precio_mayorista=0,
+                    precio_detal=0,
+                    activo=1,
+                ))
         db.commit()
+
+    _ensure_product_sku_foreign_keys(database_engine)

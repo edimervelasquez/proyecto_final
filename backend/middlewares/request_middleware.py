@@ -4,8 +4,10 @@ from typing import Callable
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from backend.models.models import Rol, Usuario
 from backend.security import validate_access_token
 
 
@@ -20,6 +22,7 @@ class RequestMiddleware(BaseHTTPMiddleware):
         "/openapi.json",
         "/api/auth/login",
         "/api/auth/registrar",
+        "/api/auth/bootstrap-admin",
     }
     ADMIN_ONLY_PATHS = (
         "/api/dashboard",
@@ -31,6 +34,7 @@ class RequestMiddleware(BaseHTTPMiddleware):
     )
     SELLER_PATHS = (
         "/api/ventas",
+        "/api/pedidos",
         "/api/inventario",
         "/api/comercial/productos",
     )
@@ -46,11 +50,58 @@ class RequestMiddleware(BaseHTTPMiddleware):
 
             try:
                 payload = validate_access_token(token)
-                request.state.token_payload = payload
             except ValueError as exc:
                 return self._unauthorized(request, start_time, str(exc))
 
-            role = str(payload.get("role", "")).upper()
+            try:
+                user_id = int(payload["sub"])
+            except (KeyError, TypeError, ValueError):
+                return self._unauthorized(
+                    request,
+                    start_time,
+                    "Token sin usuario válido.",
+                )
+
+            session_factory = getattr(request.app.state, "session_factory", None)
+            if session_factory is None:
+                logger.error(
+                    "No hay una fábrica de sesiones configurada en la aplicación."
+                )
+                return JSONResponse(
+                    status_code=500,
+                    content={"detail": "La autenticación no está configurada."},
+                )
+
+            db = session_factory()
+            try:
+                authenticated_user = (
+                    db.query(Usuario, Rol.nombre_rol)
+                    .join(Rol, Rol.id_rol == Usuario.id_rol)
+                    .filter(Usuario.id_usuario == user_id)
+                    .first()
+                )
+            except SQLAlchemyError:
+                logger.exception("No se pudo verificar el usuario autenticado.")
+                return JSONResponse(
+                    status_code=500,
+                    content={"detail": "No se pudo verificar la sesión."},
+                )
+            finally:
+                db.close()
+
+            if (
+                authenticated_user is None
+                or not authenticated_user[0].estado
+                or authenticated_user[0].estado.upper() not in ("ACTIVO", "APROBADO")
+            ):
+                return self._unauthorized(
+                    request,
+                    start_time,
+                    "La cuenta no existe o está inactiva.",
+                )
+
+            request.state.token_payload = payload
+            role = authenticated_user[1].upper()
             path = request.url.path
             allowed = None
             if (

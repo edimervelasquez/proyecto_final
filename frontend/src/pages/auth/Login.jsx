@@ -55,7 +55,7 @@ export default function Login({ onLoginSuccess }) {
         {/* PANEL IZQUIERDO - BRANDING */}
         <div className="login-branding">
           <div className="branding-header">
-            <ShieldCheck size={56} color="#f59e0b" />
+            <ShieldCheck size={56} color="#3478c8" />
             <h1>SIES Textil</h1>
             <p>Sistema Integral de Gestión y Control de Producción</p>
           </div>
@@ -182,6 +182,8 @@ export default function Login({ onLoginSuccess }) {
                   <input
                     type="password"
                     required
+                    minLength={12}
+                    maxLength={128}
                     placeholder="••••••••"
                     value={registroData.contrasenia}
                     onChange={(e) => setRegistroData({ ...registroData, contrasenia: e.target.value })}

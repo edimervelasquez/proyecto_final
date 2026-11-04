@@ -104,6 +104,7 @@ class ComercialService:
                 "tipo": movimiento.tipo_movimiento,
                 "cantidad": movimiento.cantidad,
                 "referencia": movimiento.referencia,
+                "id_produccion": movimiento.id_produccion,
                 "registrado_por": empleado,
                 "fecha": movimiento.fecha_movimiento.isoformat(),
             }
@@ -136,6 +137,7 @@ class ComercialService:
         id_usuario: int,
         referencia: str,
         grupo_traslado: str = None,
+        id_produccion: int = None,
     ):
         ComercialRepository.movimiento(db, {
             "sku_prenda": sku,
@@ -146,6 +148,7 @@ class ComercialService:
             "id_usuario": id_usuario,
             "referencia": referencia,
             "grupo_traslado": grupo_traslado,
+            "id_produccion": id_produccion,
             "fecha_movimiento": datetime.now(),
         })
 
@@ -198,6 +201,7 @@ class ComercialService:
             costo=Decimal(destino.costo_unitario_estimado),
             id_usuario=id_usuario,
             referencia=f"OP-{id_produccion}",
+            id_produccion=id_produccion,
         )
 
     @staticmethod
@@ -267,6 +271,34 @@ class ComercialService:
                     status_code=400,
                     detail=f"Existencia insuficiente en origen: hay {disponible}.",
                 )
+            if data.id_produccion is not None:
+                lote = ComercialRepository.orden_comercial(
+                    db, data.id_produccion
+                )
+                if not lote:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="La orden de producción del traslado no existe.",
+                    )
+                if lote.sku_prenda != data.sku_prenda:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="El SKU no corresponde a la orden de producción indicada.",
+                    )
+                disponible_lote = ComercialRepository.saldo_lote(
+                    db,
+                    data.sku_prenda,
+                    data.id_produccion,
+                    data.ubicacion_origen,
+                )
+                if disponible_lote < data.cantidad:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "Existencia insuficiente del lote en origen: "
+                            f"hay {disponible_lote}, solicitas {data.cantidad}."
+                        ),
+                    )
             destino = ComercialService._obtener_stock(
                 db, data.sku_prenda, data.ubicacion_destino
             )
@@ -295,6 +327,7 @@ class ComercialService:
                 id_usuario=id_usuario,
                 referencia=referencia,
                 grupo_traslado=grupo,
+                id_produccion=data.id_produccion,
             )
             ComercialService._registrar_movimiento(
                 db,
@@ -306,6 +339,7 @@ class ComercialService:
                 id_usuario=id_usuario,
                 referencia=referencia,
                 grupo_traslado=grupo,
+                id_produccion=data.id_produccion,
             )
             db.commit()
             return {
@@ -321,17 +355,29 @@ class ComercialService:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     @staticmethod
-    def registrar_venta(data, db: Session, id_usuario: int):
+    def registrar_venta(
+        data,
+        db: Session,
+        id_usuario: int,
+        require_production_lot: bool = False,
+    ):
         ubicacion = "BODEGA_MAYORISTA" if data.canal == "MAYORISTA" else "LOCAL"
         try:
             cantidades = {}
             for item in data.detalles:
                 sku = item.sku_prenda.strip()
-                cantidades[sku] = cantidades.get(sku, 0) + item.cantidad
+                id_produccion = getattr(item, "id_produccion", None)
+                if require_production_lot and id_produccion is None:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Cada línea del pedido debe indicar su orden de producción.",
+                    )
+                clave = (sku, id_produccion)
+                cantidades[clave] = cantidades.get(clave, 0) + item.cantidad
 
             lineas = []
             total = Decimal(0)
-            for sku, cantidad in cantidades.items():
+            for (sku, id_produccion), cantidad in cantidades.items():
                 producto = ComercialRepository.producto(db, sku)
                 if not producto:
                     raise HTTPException(
@@ -352,6 +398,37 @@ class ComercialService:
                     db, sku, ubicacion, lock=True
                 )
                 disponible = stock.cantidad if stock else 0
+                if id_produccion is not None:
+                    lote = ComercialRepository.orden_comercial(
+                        db, id_produccion
+                    )
+                    if not lote:
+                        raise HTTPException(
+                            status_code=404,
+                            detail=(
+                                f"No existe la orden de producción {id_produccion}."
+                            ),
+                        )
+                    if lote.sku_prenda != sku:
+                        raise HTTPException(
+                            status_code=409,
+                            detail=(
+                                f"La orden de producción {id_produccion} "
+                                f"no corresponde al SKU {sku}."
+                            ),
+                        )
+                    disponible_lote = ComercialRepository.saldo_lote(
+                        db, sku, id_produccion, ubicacion
+                    )
+                    if disponible_lote < cantidad:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=(
+                                f"Stock insuficiente del lote {id_produccion} "
+                                f"en {ubicacion}: hay {disponible_lote}, "
+                                f"solicitas {cantidad}."
+                            ),
+                        )
                 if disponible < cantidad:
                     raise HTTPException(
                         status_code=400,
@@ -361,18 +438,26 @@ class ComercialService:
                         ),
                     )
                 costo = Decimal(stock.costo_promedio) if stock else Decimal(0)
-                lineas.append((producto, stock, cantidad, precio, costo))
+                lineas.append((
+                    producto,
+                    stock,
+                    cantidad,
+                    precio,
+                    costo,
+                    id_produccion,
+                ))
                 total += precio * cantidad
 
             venta = ComercialRepository.crear_venta(
                 db, data.canal, data.cliente.strip(), id_usuario
             )
             venta.total = total
-            for producto, stock, cantidad, precio, costo in lineas:
+            for producto, stock, cantidad, precio, costo, id_produccion in lineas:
                 stock.cantidad -= cantidad
                 ComercialRepository.crear_detalle_venta(db, {
                     "id_venta": venta.id_venta,
                     "sku_prenda": producto.sku_prenda,
+                    "id_produccion": id_produccion,
                     "cantidad": cantidad,
                     "precio_unitario": precio,
                     "costo_unitario": costo,
@@ -386,11 +471,14 @@ class ComercialService:
                     costo=costo,
                     id_usuario=id_usuario,
                     referencia=f"VENTA-{venta.id_venta}",
+                    id_produccion=id_produccion,
                 )
             db.commit()
+            db.refresh(venta)
             return {
                 "id_venta": venta.id_venta,
                 "canal": venta.canal,
+                "cliente": venta.cliente,
                 "total": float(total),
                 "mensaje": "Venta registrada y existencias actualizadas.",
             }
@@ -416,6 +504,7 @@ class ComercialService:
                 "detalles": [
                     {
                         "sku_prenda": detalle.sku_prenda,
+                        "id_produccion": detalle.id_produccion,
                         "cantidad": detalle.cantidad,
                         "precio_unitario": float(detalle.precio_unitario),
                     }
