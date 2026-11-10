@@ -44,13 +44,13 @@ class DatabaseBootstrapTests(unittest.TestCase):
         with self.engine.begin() as connection:
             connection.execute(text(
                 "CREATE TABLE materia_prima ("
-                "id_materiaPrima INTEGER PRIMARY KEY, "
-                "nombre_material VARCHAR(100) NOT NULL, "
-                "Cantidad_materiaPrima INTEGER NOT NULL)"
+                "id_materia_prima INTEGER PRIMARY KEY, "
+                "nombre VARCHAR(100) NOT NULL, "
+                "stock_actual NUMERIC(10, 2) NOT NULL)"
             ))
             connection.execute(text(
                 "INSERT INTO materia_prima "
-                "(id_materiaPrima, nombre_material, Cantidad_materiaPrima) "
+                "(id_materia_prima, nombre, stock_actual) "
                 "VALUES (1, 'Material existente', 8)"
             ))
 
@@ -64,9 +64,63 @@ class DatabaseBootstrapTests(unittest.TestCase):
         with self.engine.connect() as connection:
             minimum = connection.execute(text(
                 "SELECT stock_minimo FROM materia_prima "
-                "WHERE id_materiaPrima = 1"
+                "WHERE id_materia_prima = 1"
             )).scalar_one()
         self.assertEqual(minimum, 0)
+
+    def test_bootstrap_extends_existing_diagram_tables_without_losing_rows(self):
+        with self.engine.begin() as connection:
+            connection.execute(text(
+                "CREATE TABLE usuario ("
+                "id_usuario INTEGER PRIMARY KEY, "
+                "nombre VARCHAR(100) NOT NULL, "
+                "correo VARCHAR(100) NOT NULL, "
+                "password VARCHAR(255) NOT NULL, "
+                "id_rol INTEGER NOT NULL)"
+            ))
+            connection.execute(text(
+                "INSERT INTO usuario "
+                "(id_usuario, nombre, correo, password, id_rol) "
+                "VALUES (7, 'Operaria', 'operaria@example.test', 'hash', 2)"
+            ))
+            connection.execute(text(
+                "CREATE TABLE modelo ("
+                "id_modelo INTEGER PRIMARY KEY, "
+                "nombre_modelo VARCHAR(100) NOT NULL, descripcion TEXT)"
+            ))
+            connection.execute(text(
+                "INSERT INTO modelo (id_modelo, nombre_modelo) "
+                "VALUES (4, 'Modelo existente')"
+            ))
+            connection.execute(text(
+                "CREATE TABLE produccion ("
+                "id_produccion INTEGER PRIMARY KEY, "
+                "id_modelo INTEGER NOT NULL, cantidad INTEGER NOT NULL, "
+                "fecha_inicio DATETIME, estado_general VARCHAR(50))"
+            ))
+            connection.execute(text(
+                "INSERT INTO produccion "
+                "(id_produccion, id_modelo, cantidad, estado_general) "
+                "VALUES (9, 4, 25, 'EN_PROCESO')"
+            ))
+
+        initialize_database(self.engine)
+
+        with self.engine.connect() as connection:
+            user = connection.execute(text(
+                "SELECT nombre, correo, password, estado "
+                "FROM usuario WHERE id_usuario = 7"
+            )).one()
+            order = connection.execute(text(
+                "SELECT id_modelo, cantidad, id_area, id_ingreso_insumos, "
+                "cantidad_entregada FROM produccion WHERE id_produccion = 9"
+            )).one()
+
+        self.assertEqual(
+            user,
+            ("Operaria", "operaria@example.test", "hash", "ACTIVO"),
+        )
+        self.assertEqual(order, (4, 25, None, None, 0))
 
     def test_bootstrap_adds_process_fields_to_legacy_production_stages(self):
         with self.engine.begin() as connection:

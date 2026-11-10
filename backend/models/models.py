@@ -20,28 +20,40 @@ class Rol(Base):
 class Usuario(Base):
     __tablename__ = 'usuario'
     id_usuario = Column(Integer, primary_key=True)
-    empleado = Column(String(100), nullable=False)
-    contrasenia = Column('contrasenia_usuario', String(255), nullable=False)
-    correo = Column('correo_usuario', String(100), unique=True, nullable=False)
-    cedula_usuario = Column(String(20), nullable=False)
+    empleado = Column('nombre', String(100), nullable=False)
+    contrasenia = Column('password', String(255), nullable=False)
+    correo = Column(String(100), unique=True, nullable=False)
+    cedula_usuario = Column(String(20))
     id_rol = Column(Integer, ForeignKey('rol.id_rol'), nullable=False)
-    estado = Column(String(20), default='PENDIENTE')
+    estado = Column(
+        String(20),
+        default='PENDIENTE',
+        server_default='ACTIVO',
+        nullable=False,
+    )
 
 class MateriaPrima(Base):
     __tablename__ = 'materia_prima'
-    id_materiaPrima = Column(Integer, primary_key=True)
-    nombre_material = Column(String(100), nullable=False)
-    Cantidad_materiaPrima = Column(Integer, nullable=False)
-    stock_minimo = Column(Integer, nullable=False, default=0, server_default='0')
+    id_materiaPrima = Column('id_materia_prima', Integer, primary_key=True)
+    nombre_material = Column('nombre', String(100), nullable=False)
+    Cantidad_materiaPrima = Column('stock_actual', Numeric(10, 2), nullable=False)
+    stock_minimo = Column(
+        Numeric(10, 2), nullable=False, default=0, server_default='0'
+    )
 
 class IngresoInsumos(Base):
     __tablename__ = 'ingreso_insumos'
     id_entrante = Column(Integer, primary_key=True)
-    id_materiaPrima = Column(Integer, ForeignKey('materia_prima.id_materiaPrima'), nullable=False)
-    cantidad_materia_prima = Column(Integer, nullable=False)
+    id_materiaPrima = Column(
+        'id_materia_prima',
+        Integer,
+        ForeignKey('materia_prima.id_materia_prima'),
+        nullable=False,
+    )
+    cantidad_materia_prima = Column(Numeric(10, 2), nullable=False)
     proveedor = Column(String(100))
     costo_unitario = Column(Numeric(10, 2)) 
-    fecha_ingreso = Column(Date)
+    fecha_ingreso = Column(DateTime)
 
 
 class MovimientoInsumo(Base):
@@ -49,7 +61,7 @@ class MovimientoInsumo(Base):
 
     id_movimiento = Column(Integer, primary_key=True)
     id_materiaPrima = Column(
-        Integer, ForeignKey('materia_prima.id_materiaPrima'), nullable=False
+        Integer, ForeignKey('materia_prima.id_materia_prima'), nullable=False
     )
     tipo_movimiento = Column(String(30), nullable=False)
     cantidad = Column(Numeric(12, 2), nullable=False)
@@ -65,12 +77,18 @@ class MovimientoInsumo(Base):
 class Produccion(Base):
     __tablename__ = 'produccion'
     id_produccion = Column(Integer, primary_key=True)
-    id_area = Column(Integer, ForeignKey('area.id_area'), nullable=False)
-    id_ingreso_insumos = Column(Integer, ForeignKey('ingreso_insumos.id_entrante'), nullable=False)
-    fecha_recibido = Column(Date, nullable=False)
-    fecha_entrega = Column(Date, nullable=False)
-    cantidad_recibida = Column(Integer, nullable=False)
-    cantidad_entregada = Column(Integer, default=0)
+    id_modelo = Column(
+        Integer, ForeignKey('modelo.id_modelo'), nullable=True
+    )
+    cantidad_recibida = Column('cantidad', Integer, nullable=False)
+    fecha_recibido = Column('fecha_inicio', DateTime)
+    estado_general = Column(String(50), default='EN_PROCESO')
+    id_area = Column(Integer, ForeignKey('area.id_area'))
+    id_ingreso_insumos = Column(
+        Integer, ForeignKey('ingreso_insumos.id_entrante')
+    )
+    fecha_entrega = Column(Date)
+    cantidad_entregada = Column(Integer, default=0, nullable=False)
 
 class Programacion(Base):
     __tablename__ = 'programacion'
@@ -99,9 +117,13 @@ class Prendas(Base):
 class Area(Base):
     __tablename__ = 'area'
     id_area = Column(Integer, primary_key=True)
-    id_produccion = Column(Integer) 
-    tipo_turno = Column(String(20))
     nombre_area = Column(String(50))
+
+class Modelo(Base):
+    __tablename__ = 'modelo'
+    id_modelo = Column(Integer, primary_key=True)
+    nombre_modelo = Column(String(100), nullable=False)
+    descripcion = Column(Text)
 
 class FichaTecnicaInsumo(Base):
     __tablename__ = 'ficha_tecnica_insumo'
@@ -111,7 +133,9 @@ class FichaTecnicaInsumo(Base):
         ForeignKey('producto_comercial.sku_prenda'),
         nullable=False,
     )
-    id_materiaPrima = Column(Integer, ForeignKey('materia_prima.id_materiaPrima'), nullable=False)
+    id_materiaPrima = Column(
+        Integer, ForeignKey('materia_prima.id_materia_prima'), nullable=False
+    )
     cantidad_estimada = Column(Numeric(10, 2), nullable=False)
 
 

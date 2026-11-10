@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -48,7 +49,7 @@ class InsumosService:
                     )
                 material = MateriaPrima(
                     nombre_material=nombre_material,
-                    Cantidad_materiaPrima=0,
+                    Cantidad_materiaPrima=Decimal("0"),
                     stock_minimo=data.stock_minimo,
                 )
                 db.add(material)
@@ -62,7 +63,8 @@ class InsumosService:
                 "fecha_ingreso": data.fecha_ingreso or date.today(),
             })
             material.Cantidad_materiaPrima = (
-                int(material.Cantidad_materiaPrima or 0) + int(data.cantidad)
+                Decimal(str(material.Cantidad_materiaPrima or 0))
+                + data.cantidad
             )
             db.flush()
             InsumosRepository.registrar_movimiento(db, {
@@ -90,7 +92,7 @@ class InsumosService:
                 "id_ingreso": ingreso.id_entrante,
                 "id_materiaPrima": material.id_materiaPrima,
                 "nombre_material": material.nombre_material,
-                "nuevo_stock": material.Cantidad_materiaPrima,
+                "nuevo_stock": float(material.Cantidad_materiaPrima),
             }
         except HTTPException:
             db.rollback()
@@ -228,7 +230,7 @@ class InsumosService:
             return {
                 "mensaje": "Stock mínimo actualizado correctamente.",
                 "id_materiaPrima": material.id_materiaPrima,
-                "stock_minimo": material.stock_minimo,
+                "stock_minimo": float(material.stock_minimo or 0),
             }
         except HTTPException:
             db.rollback()
@@ -244,7 +246,7 @@ class InsumosService:
                 "id_materiaPrima": material.id_materiaPrima,
                 "nombre_material": material.nombre_material,
                 "stock": float(material.Cantidad_materiaPrima or 0),
-                "stock_minimo": int(material.stock_minimo or 0),
+                "stock_minimo": float(material.stock_minimo or 0),
                 "estado": "Reponer",
             }
             for material in InsumosRepository.obtener_materias_primas(db)

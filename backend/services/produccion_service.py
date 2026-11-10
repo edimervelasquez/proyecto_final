@@ -126,6 +126,11 @@ class ProduccionService:
             )
 
         try:
+            modelo = ProduccionRepository.obtener_o_crear_modelo(
+                db,
+                producto.nombre_producto,
+                producto.descripcion,
+            )
             for material, cantidad_requerida in materiales:
                 material.Cantidad_materiaPrima = (
                     float(material.Cantidad_materiaPrima) - cantidad_requerida
@@ -134,12 +139,14 @@ class ProduccionService:
             nueva_orden = ProduccionRepository.registrar_orden(
                 db,
                 {
+                    "id_modelo": modelo.id_modelo,
                     "id_area": data.id_area,
                     "id_ingreso_insumos": ingreso_referencia.id_entrante,
                     "fecha_recibido": date.today(),
                     "fecha_entrega": data.fecha_entrega,
                     "cantidad_recibida": data.cantidad_a_producir,
                     "cantidad_entregada": 0,
+                    "estado_general": "EN_PROCESO",
                 },
             )
             db.flush()

@@ -8,6 +8,7 @@ from backend.models.models import (
     FichaTecnicaInsumo,
     IngresoInsumos,
     MateriaPrima,
+    Modelo,
     Produccion,
     RetrasoProduccion,
     TrazoProduccion,
@@ -39,6 +40,19 @@ class ProduccionRepository:
         orden = Produccion(**orden_data)
         db.add(orden)
         return orden
+
+    @staticmethod
+    def obtener_o_crear_modelo(db: Session, nombre: str, descripcion: str | None):
+        modelo = (
+            db.query(Modelo)
+            .filter(func.lower(Modelo.nombre_modelo) == nombre.lower())
+            .first()
+        )
+        if modelo is None:
+            modelo = Modelo(nombre_modelo=nombre, descripcion=descripcion)
+            db.add(modelo)
+            db.flush()
+        return modelo
 
     @staticmethod
     def obtener_ultimo_ingreso(db: Session):

@@ -21,14 +21,13 @@ BACKEND (FastAPI)
 
    pip install -r requirements.txt
 
-4. Iniciar MySQL y crear la base de datos con el nombre que usa la
-   configuración actual del proyecto:
+4. Iniciar MySQL y conservar la base existente del diagrama. Antes del primer
+   arranque con esta versión, realiza una copia de seguridad. El backend
+   adapta los nombres de columnas existentes y agrega campos/tablas auxiliares
+   que necesita la aplicación; no borra ni renombra las tablas existentes.
 
-   CREATE DATABASE yullita_creaciones;
-
-5. Si tu usuario o contraseña de MySQL son diferentes a la conexión por
-   defecto, agrega la URL de tu base de datos al archivo `.env` que crea el
-   backend la primera vez que se ejecuta. No guardes ese archivo en Git:
+5. Si la base existente tiene otro nombre o credenciales, configura en `.env`
+   de la raíz su URL real. No guardes ese archivo en Git:
 
    DATABASE_URL=mysql+pymysql://root:TU_CONTRASEÑA@localhost/yullita_creaciones
 

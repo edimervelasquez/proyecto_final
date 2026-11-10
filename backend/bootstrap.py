@@ -139,6 +139,41 @@ def _ensure_schema_compatibility(database_engine: Engine):
                 )
 
 
+def _ensure_diagram_schema_compatibility(database_engine: Engine):
+    inspector = inspect(database_engine)
+    tables = set(inspector.get_table_names())
+    additions = {
+        "usuario": {
+            "cedula_usuario": "VARCHAR(20) NULL",
+            "estado": "VARCHAR(20) NOT NULL DEFAULT 'ACTIVO'",
+        },
+        "produccion": {
+            "id_area": "INTEGER NULL",
+            "id_ingreso_insumos": "INTEGER NULL",
+            "fecha_entrega": "DATE NULL",
+            "cantidad_entregada": "INTEGER NOT NULL DEFAULT 0",
+        },
+    }
+
+    for table_name, columns_to_add in additions.items():
+        if table_name not in tables:
+            continue
+        existing_columns = {
+            column["name"]
+            for column in inspector.get_columns(table_name)
+        }
+        for column_name, definition in columns_to_add.items():
+            if column_name in existing_columns:
+                continue
+            with database_engine.begin() as connection:
+                connection.execute(text(
+                    f"ALTER TABLE {table_name} "
+                    f"ADD COLUMN {column_name} {definition}"
+                ))
+            inspector = inspect(database_engine)
+            existing_columns.add(column_name)
+
+
 def _ensure_product_sku_foreign_keys(database_engine: Engine):
     if database_engine.dialect.name != "mysql":
         return
@@ -185,6 +220,7 @@ def _ensure_product_sku_foreign_keys(database_engine: Engine):
 def initialize_database(
     database_engine: Engine = engine,
 ):
+    _ensure_diagram_schema_compatibility(database_engine)
     Base.metadata.create_all(bind=database_engine)
     _ensure_schema_compatibility(database_engine)
 
