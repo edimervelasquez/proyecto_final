@@ -39,6 +39,27 @@
   color: #ffffff;
 }
 
+.correo-recuperacion-form {
+  display: flex;
+  min-width: 250px;
+  gap: 6px;
+}
+
+.correo-recuperacion-form input {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background: #0b0f19;
+  color: #e5e7eb;
+}
+
+.btn-correo {
+  flex: 0 0 auto;
+  background: #d97706;
+  color: #111827;
+}
+
 .badge-estado {
   padding: 4px 8px;
   border-radius: 4px;

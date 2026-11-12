@@ -29,6 +29,24 @@ def _ensure_schema_compatibility(database_engine: Engine):
     inspector = inspect(database_engine)
     tables = set(inspector.get_table_names())
 
+    if "usuario" in tables:
+        user_columns = {
+            column["name"] for column in inspector.get_columns("usuario")
+        }
+        recovery_columns = {
+            "correo_recuperacion": "VARCHAR(254) NULL",
+            "codigo_recuperacion_hash": "VARCHAR(64) NULL",
+            "codigo_recuperacion_expira": "INTEGER NULL",
+            "intentos_codigo_recuperacion": "INTEGER NOT NULL DEFAULT 0",
+        }
+        for column_name, definition in recovery_columns.items():
+            if column_name not in user_columns:
+                with database_engine.begin() as connection:
+                    connection.execute(text(
+                        f"ALTER TABLE usuario ADD COLUMN "
+                        f"{column_name} {definition}"
+                    ))
+
     for table_name in ("detalle_venta", "movimiento_prenda"):
         columns = {
             column["name"]

@@ -12,6 +12,15 @@ class AuthRepository:
         return db.query(Usuario).filter(Usuario.correo == correo).first()
 
     @staticmethod
+    def obtener_por_correo_para_actualizacion(db: Session, correo: str):
+        return (
+            db.query(Usuario)
+            .filter(Usuario.correo == correo)
+            .with_for_update()
+            .first()
+        )
+
+    @staticmethod
     def crear_usuario(db: Session, usuario_data: dict):
         nuevo_usuario = Usuario(**usuario_data)
         db.add(nuevo_usuario)

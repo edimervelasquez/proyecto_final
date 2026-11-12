@@ -23,6 +23,12 @@ class Usuario(Base):
     empleado = Column('nombre', String(100), nullable=False)
     contrasenia = Column('password', String(255), nullable=False)
     correo = Column(String(100), unique=True, nullable=False)
+    correo_recuperacion = Column(String(254))
+    codigo_recuperacion_hash = Column(String(64))
+    codigo_recuperacion_expira = Column(Integer)
+    intentos_codigo_recuperacion = Column(
+        Integer, nullable=False, default=0, server_default='0'
+    )
     cedula_usuario = Column(String(20))
     id_rol = Column(Integer, ForeignKey('rol.id_rol'), nullable=False)
     estado = Column(

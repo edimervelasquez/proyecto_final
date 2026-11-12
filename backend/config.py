@@ -10,6 +10,10 @@ DEFAULT_ENVIRONMENT = {
     "INITIAL_ADMIN_TOKEN": lambda: secrets.token_urlsafe(48),
     "APP_ENV": lambda: "production",
     "PASSWORD_MIN_LENGTH": lambda: "12",
+    "SMTP_HOST": lambda: "smtp.gmail.com",
+    "SMTP_PORT": lambda: "587",
+    "SMTP_USE_TLS": lambda: "true",
+    "SMTP_USE_SSL": lambda: "false",
     "CORS_ALLOWED_ORIGINS": lambda: (
         "http://localhost:5173,http://127.0.0.1:5173"
     ),

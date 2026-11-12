@@ -4,8 +4,11 @@ from sqlalchemy.orm import Session
 from backend.controllers.auth_controller import AuthController
 from backend.database import get_db
 from backend.schemas.auth_schema import (
+    CorreoRecuperacionUpdate,
     EstadoUpdate,
+    RestablecerContrasena,
     RolUpdate,
+    SolicitudRecuperacionContrasena,
     UsuarioAdminBootstrap,
     UsuarioLogin,
     UsuarioRegistro,
@@ -17,6 +20,22 @@ router = APIRouter()
 @router.post("/login")
 def login(data: UsuarioLogin, db: Session = Depends(get_db)):
     return AuthController.login(data, db)
+
+@router.post("/forgot-password")
+def solicitar_recuperacion(
+    data: SolicitudRecuperacionContrasena,
+    db: Session = Depends(get_db),
+):
+    return AuthController.solicitar_recuperacion(data, db)
+
+
+@router.post("/reset-password")
+def restablecer_contrasena(
+    data: RestablecerContrasena,
+    db: Session = Depends(get_db),
+):
+    return AuthController.restablecer_contrasena(data, db)
+
 
 @router.post("/registrar", status_code=status.HTTP_201_CREATED)
 def registrar(data: UsuarioRegistro, db: Session = Depends(get_db)):
@@ -46,6 +65,14 @@ def actualizar_estado(user_id: int, body: EstadoUpdate, db: Session = Depends(ge
 @router.put("/usuarios/{user_id}/rol")
 def actualizar_rol(user_id: int, body: RolUpdate, db: Session = Depends(get_db)):
     return AuthController.cambiar_rol(user_id, body, db)
+
+@router.put("/usuarios/{user_id}/correo-recuperacion")
+def actualizar_correo_recuperacion(
+    user_id: int,
+    body: CorreoRecuperacionUpdate,
+    db: Session = Depends(get_db),
+):
+    return AuthController.actualizar_correo_recuperacion(user_id, body, db)
 
 @router.delete("/usuarios/{user_id}")
 def eliminar_usuario(user_id: int, db: Session = Depends(get_db)):

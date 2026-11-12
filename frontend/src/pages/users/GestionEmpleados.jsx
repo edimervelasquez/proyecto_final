@@ -43,6 +43,19 @@ const GestionEmpleados = () => {
     }
   };
 
+  const actualizarCorreoRecuperacion = async (id, correo) => {
+    try {
+      const res = await authService.actualizarCorreoRecuperacion(id, correo);
+      setMensaje({ texto: res.mensaje, tipo: 'exito' });
+      await cargarUsuarios();
+    } catch (error) {
+      setMensaje({
+        texto: error.message || 'No se pudo actualizar el correo de recuperación.',
+        tipo: 'error',
+      });
+    }
+  };
+
   const eliminarUsuario = async (id) => {
     if (window.confirm('¿Seguro que desea eliminar este usuario?')) {
       const res = await authService.eliminarUsuario(id);
@@ -66,6 +79,7 @@ const GestionEmpleados = () => {
           usuarios={usuarios}
           onCambiarEstado={cambiarEstado}
           onCambiarRol={cambiarRol}
+          onActualizarCorreoRecuperacion={actualizarCorreoRecuperacion}
           onEliminar={eliminarUsuario}
         />
       )}

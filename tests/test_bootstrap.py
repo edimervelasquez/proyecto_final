@@ -214,6 +214,10 @@ class DatabaseBootstrapTests(unittest.TestCase):
             self.assertGreaterEqual(len(first_secret.encode("utf-8")), 32)
             self.assertGreaterEqual(len(first_admin_token.encode("utf-8")), 32)
             self.assertIn("CORS_ALLOWED_ORIGINS=", env_file.read_text())
+            self.assertEqual(environment["SMTP_HOST"], "smtp.gmail.com")
+            self.assertEqual(environment["SMTP_PORT"], "587")
+            self.assertEqual(environment["SMTP_USE_TLS"], "true")
+            self.assertEqual(environment["SMTP_USE_SSL"], "false")
 
             loaded_environment = {}
             initialize_environment(env_file, loaded_environment)
@@ -222,6 +226,25 @@ class DatabaseBootstrapTests(unittest.TestCase):
                 loaded_environment["INITIAL_ADMIN_TOKEN"],
                 first_admin_token,
             )
+
+    def test_local_environment_file_overrides_smtp_defaults(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / ".env"
+            env_file.write_text(
+                "SMTP_HOST=smtp.local.test\n"
+                "SMTP_PORT=2525\n"
+                "SMTP_USE_TLS=false\n"
+                "SMTP_USE_SSL=true\n",
+                encoding="utf-8",
+            )
+            environment = {}
+
+            initialize_environment(env_file, environment)
+
+            self.assertEqual(environment["SMTP_HOST"], "smtp.local.test")
+            self.assertEqual(environment["SMTP_PORT"], "2525")
+            self.assertEqual(environment["SMTP_USE_TLS"], "false")
+            self.assertEqual(environment["SMTP_USE_SSL"], "true")
 
 
 if __name__ == "__main__":

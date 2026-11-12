@@ -7,6 +7,7 @@ from backend.config import Config
 class UsuarioRegistro(BaseModel):
     empleado: str = Field(..., min_length=1, max_length=100)
     correo: EmailStr
+    correo_recuperacion: EmailStr | None = None
     contrasenia: str = Field(
         ...,
         min_length=Config.PASSWORD_MIN_LENGTH,
@@ -23,6 +24,7 @@ class UsuarioRegistro(BaseModel):
 class UsuarioAdminBootstrap(BaseModel):
     empleado: str = Field(..., min_length=1, max_length=100)
     correo: EmailStr
+    correo_recuperacion: EmailStr | None = None
     contrasenia: str = Field(
         ...,
         min_length=Config.PASSWORD_MIN_LENGTH,
@@ -39,6 +41,29 @@ class UsuarioAdminBootstrap(BaseModel):
 class UsuarioLogin(BaseModel):
     correo: EmailStr
     contrasenia: str = Field(..., max_length=128)
+
+
+class SolicitudRecuperacionContrasena(BaseModel):
+    correo_acceso: EmailStr
+    correo_destino: EmailStr
+
+
+class RestablecerContrasena(BaseModel):
+    correo_acceso: EmailStr
+    codigo: str = Field(..., min_length=6, max_length=6, pattern=r"^[0-9]{6}$")
+    nueva_contrasena: str = Field(
+        ...,
+        min_length=Config.PASSWORD_MIN_LENGTH,
+        max_length=128,
+        description=(
+            "Mínimo de caracteres configurado para el entorno "
+            f"{Config.APP_ENV} ({Config.PASSWORD_MIN_LENGTH})."
+        ),
+    )
+
+
+class CorreoRecuperacionUpdate(BaseModel):
+    correo_recuperacion: EmailStr
 
 
 class EstadoUpdate(BaseModel):

@@ -1,6 +1,15 @@
+import { useState } from 'react';
 import '../../styles/GestionEmpleados.css';
 
-const TablaEmpleados = ({ usuarios, onCambiarEstado, onCambiarRol, onEliminar }) => {
+const TablaEmpleados = ({
+  usuarios,
+  onCambiarEstado,
+  onCambiarRol,
+  onActualizarCorreoRecuperacion,
+  onEliminar,
+}) => {
+  const [correosRecuperacion, setCorreosRecuperacion] = useState({});
+
   return (
     <div className="tabla-container">
       <table className="tabla-empleados">
@@ -9,6 +18,7 @@ const TablaEmpleados = ({ usuarios, onCambiarEstado, onCambiarRol, onEliminar })
             <th>ID</th>
             <th>Empleado</th>
             <th>Correo</th>
+            <th>Correo de recuperación</th>
             <th>Cédula</th>
             <th>Rol</th>
             <th>Estado</th>
@@ -21,6 +31,34 @@ const TablaEmpleados = ({ usuarios, onCambiarEstado, onCambiarRol, onEliminar })
               <td>{u.id_usuario}</td>
               <td>{u.empleado || u.nombre}</td>
               <td>{u.correo_usuario || u.correo}</td>
+              <td>
+                <form
+                  className="correo-recuperacion-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    onActualizarCorreoRecuperacion(
+                      u.id_usuario,
+                      correosRecuperacion[u.id_usuario] ?? u.correo_recuperacion ?? '',
+                    );
+                  }}
+                >
+                  <input
+                    type="email"
+                    required
+                    maxLength={254}
+                    aria-label={`Correo de recuperación de ${u.empleado || u.nombre}`}
+                    placeholder="persona@gmail.com"
+                    value={correosRecuperacion[u.id_usuario] ?? u.correo_recuperacion ?? ''}
+                    onChange={(event) => setCorreosRecuperacion({
+                      ...correosRecuperacion,
+                      [u.id_usuario]: event.target.value,
+                    })}
+                  />
+                  <button type="submit" className="btn-accion btn-correo">
+                    Guardar
+                  </button>
+                </form>
+              </td>
               <td>{u.cedula || 'N/A'}</td>
               <td>
                 <select

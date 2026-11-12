@@ -74,6 +74,33 @@ Deja abierta la terminal donde está corriendo el backend. Abre otra terminal:
 
 El frontend se conecta por defecto al backend en http://127.0.0.1:8000/api.
 
+RECUPERACION DE CONTRASENA
+
+Cada usuario debe tener un correo real de recuperacion distinto o adicional
+al correo con el que inicia sesion. El registro solicita este correo y el
+administrador puede configurarlo o cambiarlo en Gestion de Empleados. Para
+cuentas existentes, configura primero el correo desde esa pantalla. El
+backend agrega automaticamente las columnas necesarias al iniciar.
+
+El backend usa Gmail por TLS en el puerto 587 por defecto. El usuario SMTP y
+la contrasena de aplicacion se deben definir en `.env` en la raiz, sin publicar
+esas credenciales:
+
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USERNAME=usuario-smtp
+   SMTP_PASSWORD=contrasena-smtp
+   SMTP_FROM_EMAIL=no-reply@example.com
+   SMTP_USE_TLS=true
+   SMTP_USE_SSL=false
+
+El `.env` local puede sustituir el servidor, puerto y opciones TLS por defecto.
+La aplicacion no falla al arrancar si faltan las credenciales SMTP; el envio
+de correo en produccion requiere usuario, contrasena de aplicacion y remitente.
+En desarrollo, si no se configura SMTP, el codigo se escribe en el log del
+backend unicamente cuando `APP_ENV=development`. Los codigos vencen a los 10
+minutos, son de un solo uso y se almacenan como hash en la base de datos.
+
 
 PRIMER INICIO DE SESIÓN
 

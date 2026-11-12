@@ -23,6 +23,8 @@ class RequestMiddleware(BaseHTTPMiddleware):
         "/api/auth/login",
         "/api/auth/registrar",
         "/api/auth/bootstrap-admin",
+        "/api/auth/forgot-password",
+        "/api/auth/reset-password",
     }
     ADMIN_ONLY_PATHS = (
         "/api/dashboard",
