@@ -18,6 +18,7 @@ from backend.models.models import (
     FichaTecnicaInsumo,
     InventarioPrenda,
     MateriaPrima,
+    Modelo,
     MovimientoPrenda,
     OrdenComercial,
     Produccion,
@@ -279,7 +280,11 @@ class HttpApiTests(unittest.TestCase):
             )
             db.add(ingreso)
             db.flush()
+            modelo = Modelo(nombre_modelo="Modelo de pedido")
+            db.add(modelo)
+            db.flush()
             order = Produccion(
+                id_modelo=modelo.id_modelo,
                 id_area=area.id_area,
                 id_ingreso_insumos=ingreso.id_entrante,
                 fecha_recibido=date.today(),

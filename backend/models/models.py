@@ -27,7 +27,6 @@ class Usuario(Base):
     id_rol = Column(Integer, ForeignKey('rol.id_rol'), nullable=False)
     estado = Column(
         String(20),
-        default='PENDIENTE',
         server_default='ACTIVO',
         nullable=False,
     )
@@ -36,18 +35,35 @@ class MateriaPrima(Base):
     __tablename__ = 'materia_prima'
     id_materiaPrima = Column('id_materia_prima', Integer, primary_key=True)
     nombre_material = Column('nombre', String(100), nullable=False)
-    Cantidad_materiaPrima = Column('stock_actual', Numeric(10, 2), nullable=False)
+    referencia = Column(String(100))
+    descripcion = Column(Text)
+    id_proveedor = Column(Integer)
+    color = Column(String(50))
+    origen = Column(String(100))
+    Cantidad_materiaPrima = Column(
+        'stock_actual',
+        Numeric(10, 2),
+        nullable=False,
+        default=0,
+        server_default='0.00',
+    )
+    unidad_medida = Column(
+        String(50),
+        nullable=True,
+        default='Metros',
+        server_default='Metros',
+    )
     stock_minimo = Column(
-        Numeric(10, 2), nullable=False, default=0, server_default='0'
+        Integer, nullable=False, default=0, server_default='0'
     )
 
 class IngresoInsumos(Base):
     __tablename__ = 'ingreso_insumos'
-    id_entrante = Column(Integer, primary_key=True)
+    id_entrante = Column(Integer, primary_key=True, index=True)
     id_materiaPrima = Column(
         'id_materia_prima',
         Integer,
-        ForeignKey('materia_prima.id_materia_prima'),
+        ForeignKey('materia_prima.id_materia_prima', ondelete='CASCADE'),
         nullable=False,
     )
     cantidad_materia_prima = Column(Numeric(10, 2), nullable=False)
@@ -78,17 +94,21 @@ class Produccion(Base):
     __tablename__ = 'produccion'
     id_produccion = Column(Integer, primary_key=True)
     id_modelo = Column(
-        Integer, ForeignKey('modelo.id_modelo'), nullable=True
+        Integer, ForeignKey('modelo.id_modelo'), nullable=False
     )
     cantidad_recibida = Column('cantidad', Integer, nullable=False)
-    fecha_recibido = Column('fecha_inicio', DateTime)
-    estado_general = Column(String(50), default='EN_PROCESO')
-    id_area = Column(Integer, ForeignKey('area.id_area'))
-    id_ingreso_insumos = Column(
-        Integer, ForeignKey('ingreso_insumos.id_entrante')
+    fecha_recibido = Column(
+        'fecha_inicio', DateTime, server_default=func.now()
     )
+    estado_general = Column(
+        String(50), default='EN_PROCESO', server_default='EN_PROCESO'
+    )
+    id_area = Column(Integer)
+    id_ingreso_insumos = Column(Integer)
     fecha_entrega = Column(Date)
-    cantidad_entregada = Column(Integer, default=0, nullable=False)
+    cantidad_entregada = Column(
+        Integer, default=0, server_default='0', nullable=False
+    )
 
 class Programacion(Base):
     __tablename__ = 'programacion'
@@ -99,13 +119,12 @@ class Programacion(Base):
 
 class ProgramacionUsuario(Base):
     __tablename__ = 'programacion_usuario'
-    __table_args__ = {'extend_existing': True}
 
-    id_programacion = Column(Integer, primary_key=True, default=1)
-    id_rol = Column(Integer, primary_key=True, default=3)
-    cantidad_defectuosa = Column(Integer, default=0)
-    cantidad_recibida = Column(Integer, default=0)
-    cantidad_entregada = Column(Integer, default=0)
+    id_programacion = Column(Integer, primary_key=True)
+    id_rol = Column(Integer, primary_key=True)
+    cantidad_defectuosa = Column(Integer)
+    cantidad_recibida = Column(Integer)
+    cantidad_entregada = Column(Integer)
 
 class Prendas(Base):
     __tablename__ = 'prendas'
@@ -117,7 +136,8 @@ class Prendas(Base):
 class Area(Base):
     __tablename__ = 'area'
     id_area = Column(Integer, primary_key=True)
-    nombre_area = Column(String(50))
+    nombre_area = Column(String(100), nullable=False)
+    descripcion = Column(Text)
 
 class Modelo(Base):
     __tablename__ = 'modelo'
@@ -228,17 +248,18 @@ class EtapaProduccion(Base):
 
     id_etapa = Column(Integer, primary_key=True)
     id_produccion = Column(
-        Integer, ForeignKey('produccion.id_produccion'), nullable=False
+        Integer,
+        ForeignKey('produccion.id_produccion', ondelete='CASCADE'),
+        nullable=False,
     )
     id_area_anterior = Column(Integer, ForeignKey('area.id_area'))
     id_area_nueva = Column(Integer, ForeignKey('area.id_area'), nullable=False)
     id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
-    fecha_cambio = Column(DateTime, nullable=False, server_default=func.now())
+    fecha_cambio = Column(DateTime, server_default=func.now())
     estado = Column(
         String(30),
-        nullable=False,
-        default="EN_PROCESO",
-        server_default="EN_PROCESO",
+        default="COMPLETADO",
+        server_default="COMPLETADO",
     )
     observaciones = Column(Text)
 
@@ -321,3 +342,97 @@ class RetrasoProduccion(Base):
     id_usuario_reanuda = Column(
         Integer, ForeignKey('usuario.id_usuario')
     )
+
+
+class IngresoMateria(Base):
+    __tablename__ = 'ingreso_materia'
+
+    id_ingreso = Column(Integer, primary_key=True)
+    id_materiaPrima = Column(
+        'id_materia_prima',
+        Integer,
+        ForeignKey('materia_prima.id_materia_prima', ondelete='CASCADE'),
+        nullable=False,
+    )
+    cantidad_ingresada = Column(Numeric(10, 2), nullable=False)
+    fecha_ingreso = Column(DateTime, server_default=func.now())
+    numero_metros_o_unidades = Column(Numeric(10, 2), nullable=False)
+    observacion = Column(Text)
+
+
+class TipoMerma(Base):
+    __tablename__ = 'tipo_merma'
+
+    id_tipo_merma = Column(Integer, primary_key=True)
+    descripcion_merma = Column(String(100), nullable=False)
+
+
+class Merma(Base):
+    __tablename__ = 'merma'
+
+    id_merma = Column(Integer, primary_key=True)
+    id_produccion = Column(
+        Integer,
+        ForeignKey('produccion.id_produccion', ondelete='CASCADE'),
+        nullable=False,
+    )
+    id_tipo_merma = Column(
+        Integer, ForeignKey('tipo_merma.id_tipo_merma'), nullable=False
+    )
+    cantidad_sobrante = Column(Numeric(10, 2), nullable=False)
+    fecha_registro = Column(DateTime, server_default=func.now())
+
+
+class MetrajeTrazo(Base):
+    __tablename__ = 'metraje_trazo'
+
+    id_trazo = Column(Integer, primary_key=True)
+    id_modelo = Column(Integer, ForeignKey('modelo.id_modelo'), nullable=False)
+    id_materia_prima = Column(
+        Integer,
+        ForeignKey('materia_prima.id_materia_prima'),
+        nullable=False,
+    )
+    talla = Column(String(20), nullable=False)
+    largo = Column(Numeric(10, 2), nullable=False)
+    cantidad_metros = Column(Numeric(10, 2), nullable=False)
+
+
+class VariableMerma(Base):
+    __tablename__ = 'variable_merma'
+
+    id_variable = Column(Integer, primary_key=True)
+    nombre = Column(String(100), nullable=False)
+    unidad_medida = Column(String(20), nullable=False)
+
+
+__all__ = [
+    'Area',
+    'ControlCalidad',
+    'DetalleVenta',
+    'EtapaProduccion',
+    'FichaTecnicaInsumo',
+    'IngresoInsumos',
+    'IngresoMateria',
+    'InventarioPrenda',
+    'MateriaPrima',
+    'Merma',
+    'MetrajeTrazo',
+    'Modelo',
+    'MovimientoInsumo',
+    'MovimientoPrenda',
+    'OrdenComercial',
+    'Prendas',
+    'Produccion',
+    'Programacion',
+    'ProgramacionUsuario',
+    'ProductoComercial',
+    'RetrasoProduccion',
+    'Rol',
+    'TipoMerma',
+    'TrazoProduccion',
+    'Trazabilidad',
+    'Usuario',
+    'VariableMerma',
+    'Venta',
+]

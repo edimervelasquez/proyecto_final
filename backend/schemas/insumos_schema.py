@@ -52,7 +52,7 @@ class IngresoInsumoCreate(BaseModel):
     proveedor: Optional[str] = "Proveedor Genérico"
     costo_unitario: Optional[float] = Field(default=0.0, ge=0)
     fecha_ingreso: Optional[date] = None
-    stock_minimo: Decimal = Field(default=Decimal("0"), ge=0)
+    stock_minimo: int = Field(default=0, ge=0)
 
 
 class IngresoInsumoResponse(BaseModel):
@@ -64,7 +64,7 @@ class IngresoInsumoResponse(BaseModel):
 
 
 class StockMinimoUpdate(BaseModel):
-    stock_minimo: Decimal = Field(..., ge=0)
+    stock_minimo: int = Field(..., ge=0)
 
 class DetalleInsumoFicha(BaseModel):
     id_materiaPrima: int

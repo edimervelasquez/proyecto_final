@@ -12,6 +12,7 @@ from backend.models.models import (
     DetalleVenta,
     IngresoInsumos,
     MateriaPrima,
+    Modelo,
     OrdenComercial,
     Produccion,
     Rol,
@@ -61,7 +62,11 @@ class FinancialSummaryTests(unittest.TestCase):
         )
         self.db.add(ingreso)
         self.db.flush()
+        modelo = Modelo(nombre_modelo="Modelo de prueba")
+        self.db.add(modelo)
+        self.db.flush()
         order = Produccion(
+            id_modelo=modelo.id_modelo,
             id_area=area.id_area,
             id_ingreso_insumos=ingreso.id_entrante,
             fecha_recibido=date.today(),
