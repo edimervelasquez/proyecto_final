@@ -12,20 +12,26 @@ Frontend: React / Vite, CSS moderno (Industrial Dark Theme).
 
 🚀 Instalación y Ejecución Rápida
 
-1. Base de Datos (MySQL)
+1. Configuración
 
-Crea una base de datos llamada yullita_creaciones.
+Desde la raíz del proyecto, crea `.env` desde la plantilla y configura la
+conexión a la base de datos y el correo SMTP:
 
-Importa el archivo .sql de estructura ubicado en la carpeta de respaldos/dumps del proyecto.
+```powershell
+Copy-Item .env.example .env
+```
 
-Verifica la conexión en el archivo .env del backend (DATABASE_URL).
+Edita `DATABASE_URL` y, para recuperación por correo, las variables `SMTP_*`.
+El `.env` de la raíz es compartido por backend y frontend, está excluido de
+Git y no debe publicarse. El backend genera las claves de seguridad al iniciar.
 
 2. Backend (API)
 
-cd backend
+Desde la raíz del proyecto:
+
 python -m venv venv
 # En Windows:
-venv\Scripts\activate
+venv\Scripts\Activate.ps1
 # En Linux/Mac:
 source venv/bin/activate
 
@@ -33,7 +39,8 @@ pip install -r requirements.txt
 python app.py
 
 
-El servidor levantará por defecto en http://localhost:8000.
+El servidor levantará por defecto en http://127.0.0.1:8000. La base de datos
+debe existir y estar disponible según `DATABASE_URL`.
 
 3. Frontend (Interfaz Web)
 
@@ -42,7 +49,8 @@ npm install
 npm run dev
 
 
-La aplicación abrirá en http://localhost:5173.
+La aplicación abrirá en http://localhost:5173. Su URL de API se configura con
+`VITE_API_URL` en el `.env` de la raíz.
 
 👥 Roles del Sistema
 

@@ -218,6 +218,16 @@ class DatabaseBootstrapTests(unittest.TestCase):
             self.assertEqual(environment["SMTP_PORT"], "587")
             self.assertEqual(environment["SMTP_USE_TLS"], "true")
             self.assertEqual(environment["SMTP_USE_SSL"], "false")
+            self.assertEqual(
+                environment["DATABASE_URL"],
+                "mysql+pymysql://root:123456@localhost/yullita_creaciones",
+            )
+            self.assertEqual(environment["HOST"], "127.0.0.1")
+            self.assertEqual(environment["PORT"], "8000")
+            self.assertEqual(
+                environment["VITE_API_URL"],
+                "http://127.0.0.1:8000/api",
+            )
 
             loaded_environment = {}
             initialize_environment(env_file, loaded_environment)
@@ -245,6 +255,46 @@ class DatabaseBootstrapTests(unittest.TestCase):
             self.assertEqual(environment["SMTP_PORT"], "2525")
             self.assertEqual(environment["SMTP_USE_TLS"], "false")
             self.assertEqual(environment["SMTP_USE_SSL"], "true")
+
+    def test_environment_file_fills_blank_process_smtp_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / ".env"
+            env_file.write_text(
+                "SMTP_HOST=smtp.configured.test\n"
+                "SMTP_USERNAME=mailer@example.test\n"
+                "SMTP_PASSWORD=app-password\n"
+                "SMTP_FROM_EMAIL=mailer@example.test\n",
+                encoding="utf-8",
+            )
+            environment = {
+                "SMTP_HOST": "",
+                "SMTP_USERNAME": "",
+                "SMTP_PASSWORD": "",
+                "SMTP_FROM_EMAIL": "",
+            }
+
+            initialize_environment(env_file, environment)
+
+            self.assertEqual(environment["SMTP_HOST"], "smtp.configured.test")
+            self.assertEqual(environment["SMTP_USERNAME"], "mailer@example.test")
+            self.assertEqual(environment["SMTP_PASSWORD"], "app-password")
+            self.assertEqual(
+                environment["SMTP_FROM_EMAIL"],
+                "mailer@example.test",
+            )
+
+    def test_environment_file_does_not_override_nonblank_process_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / ".env"
+            env_file.write_text(
+                "SMTP_HOST=smtp.file.test\n",
+                encoding="utf-8",
+            )
+            environment = {"SMTP_HOST": "smtp.environment.test"}
+
+            initialize_environment(env_file, environment)
+
+            self.assertEqual(environment["SMTP_HOST"], "smtp.environment.test")
 
 
 if __name__ == "__main__":

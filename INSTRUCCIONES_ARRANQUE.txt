@@ -7,7 +7,15 @@ BACKEND (FastAPI)
    git clone https://github.com/edimervelasquez/proyecto_final.git
    cd proyecto_final
 
-2. Crear y activar el entorno virtual:
+2. Crear el archivo local de configuración desde la plantilla y editarlo:
+
+   Copy-Item .env.example .env
+
+   Configura en `.env` la conexión de base de datos (`DATABASE_URL`) y, si
+   necesitas recuperación por correo, las variables `SMTP_*`. No compartas
+   ni subas `.env`; las claves de seguridad se generan automáticamente.
+
+3. Crear y activar el entorno virtual:
 
    python -m venv venv
    .\venv\Scripts\Activate.ps1
@@ -17,26 +25,21 @@ BACKEND (FastAPI)
    Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
    .\venv\Scripts\Activate.ps1
 
-3. Instalar las dependencias:
+4. Instalar las dependencias:
 
    pip install -r requirements.txt
 
-4. Iniciar MySQL y conservar la base existente del diagrama. Antes del primer
+5. Iniciar MySQL y conservar la base existente del diagrama. Antes del primer
    arranque con esta versión, realiza una copia de seguridad. El backend
    adapta los nombres de columnas existentes y agrega campos/tablas auxiliares
    que necesita la aplicación; no borra ni renombra las tablas existentes.
-
-5. Si la base existente tiene otro nombre o credenciales, configura en `.env`
-   de la raíz su URL real. No guardes ese archivo en Git:
-
-   DATABASE_URL=mysql+pymysql://root:TU_CONTRASEÑA@localhost/yullita_creaciones
 
 6. Desde la carpeta raíz del proyecto, arrancar el backend:
 
    python app.py
 
-   En el primer inicio se crea automáticamente `.env` con claves seguras y
-   orígenes locales. No borres ni regeneres `SECRET_KEY`: los tokens activos
+   Si no copiaste la plantilla, el backend crea `.env` con valores locales y
+   claves seguras. No borres ni regeneres `SECRET_KEY`: los tokens activos
    dejarían de funcionar.
 
    El backend está hecho con FastAPI y quedará disponible en:
@@ -72,7 +75,8 @@ Deja abierta la terminal donde está corriendo el backend. Abre otra terminal:
 
    http://localhost:5173/
 
-El frontend se conecta por defecto al backend en http://127.0.0.1:8000/api.
+La URL de la API se configura desde `VITE_API_URL` en el `.env` de la raíz.
+Para cambios en esa variable, reinicia Vite.
 
 RECUPERACION DE CONTRASENA
 
@@ -94,7 +98,8 @@ esas credenciales:
    SMTP_USE_TLS=true
    SMTP_USE_SSL=false
 
-El `.env` local puede sustituir el servidor, puerto y opciones TLS por defecto.
+El `.env` local contiene el usuario, contraseña de aplicación y remitente SMTP.
+Si el backend se ejecuta en otro servidor, configura allí las mismas variables.
 La aplicacion no falla al arrancar si faltan las credenciales SMTP; el envio
 de correo en produccion requiere usuario, contrasena de aplicacion y remitente.
 En desarrollo, si no se configura SMTP, el codigo se escribe en el log del

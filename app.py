@@ -1,5 +1,12 @@
-﻿from backend.main import app
+from backend.config import Config
+from backend.main import app
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)
+
+    uvicorn.run(
+        "backend.main:app",
+        host=Config.HOST,
+        port=Config.PORT,
+        reload=Config.APP_ENV == "development",
+    )

@@ -10,13 +10,22 @@ DEFAULT_ENVIRONMENT = {
     "INITIAL_ADMIN_TOKEN": lambda: secrets.token_urlsafe(48),
     "APP_ENV": lambda: "production",
     "PASSWORD_MIN_LENGTH": lambda: "12",
+    "DATABASE_URL": lambda: (
+        "mysql+pymysql://root:123456@localhost/yullita_creaciones"
+    ),
+    "HOST": lambda: "127.0.0.1",
+    "PORT": lambda: "8000",
     "SMTP_HOST": lambda: "smtp.gmail.com",
     "SMTP_PORT": lambda: "587",
+    "SMTP_USERNAME": lambda: "",
+    "SMTP_PASSWORD": lambda: "",
+    "SMTP_FROM_EMAIL": lambda: "",
     "SMTP_USE_TLS": lambda: "true",
     "SMTP_USE_SSL": lambda: "false",
     "CORS_ALLOWED_ORIGINS": lambda: (
         "http://localhost:5173,http://127.0.0.1:5173"
     ),
+    "VITE_API_URL": lambda: "http://127.0.0.1:8000/api",
 }
 
 
@@ -31,8 +40,8 @@ def _read_env_file(env_file: Path, environment: dict[str, str]) -> None:
         key, value = stripped.split("=", 1)
         key = key.strip()
         value = value.strip().strip("\"'")
-        if key and value:
-            environment.setdefault(key, value)
+        if key and not environment.get(key, "").strip():
+            environment[key] = value
 
 
 def initialize_environment(
@@ -42,11 +51,14 @@ def initialize_environment(
     target_environment = os.environ if environment is None else environment
     _read_env_file(env_file, target_environment)
 
-    missing = {
-        key: factory()
-        for key, factory in DEFAULT_ENVIRONMENT.items()
-        if not target_environment.get(key)
-    }
+    missing = {}
+    for key, factory in DEFAULT_ENVIRONMENT.items():
+        if key not in target_environment:
+            missing[key] = factory()
+        elif not target_environment[key]:
+            default_value = factory()
+            if default_value:
+                missing[key] = default_value
     if not missing:
         return
 
@@ -79,5 +91,12 @@ class Config:
         raise RuntimeError(
             "PASSWORD_MIN_LENGTH no puede ser menor de 12 fuera de desarrollo."
         )
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:123456@localhost/yullita_creaciones'
+    SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"]
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    HOST = os.environ["HOST"]
+    try:
+        PORT = int(os.environ["PORT"])
+    except ValueError as exc:
+        raise RuntimeError("PORT debe ser un número entero.") from exc
+    if not 1 <= PORT <= 65535:
+        raise RuntimeError("PORT debe estar entre 1 y 65535.")
