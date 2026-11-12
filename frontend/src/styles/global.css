@@ -5,10 +5,18 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-body {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
+html,
+body,
+#root {
+  width: 100%;
   min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 button {
@@ -25,12 +33,21 @@ textarea {
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.8rem;
   outline: none;
+  color: var(--color-text);
+  background: var(--color-surface-soft);
   font-size: 0.95rem;
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.12);
 }
 
 .app-shell {
@@ -58,14 +75,14 @@ select:focus {
   padding: 1.5rem 1rem;
   overflow-y: auto;
   overscroll-behavior: contain;
-  color: #eff6ff;
-  background: #193b63;
-  border-right: 1px solid #2e5585;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border-right: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 .app-brand {
   margin: 0 0 1.5rem;
-  color: #d7eaff;
+  color: var(--color-text);
   text-align: center;
   font-family: Georgia, serif;
   font-size: 1.4rem;
@@ -77,18 +94,19 @@ select:focus {
   gap: 0.35rem;
   margin-bottom: 1.5rem;
   padding: 0.85rem;
-  background: rgba(233, 243, 255, 0.1);
-  border: 1px solid rgba(205, 225, 249, 0.24);
-  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 0.85rem;
 }
 
 .user-role {
   align-self: flex-start;
   padding: 0.2rem 0.6rem;
-  color: #d7eaff;
-  background: rgba(96, 165, 250, 0.17);
-  border: 1px solid #74a8e8;
+  color: #e6c65a;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: bold;
@@ -96,9 +114,9 @@ select:focus {
 }
 
 .user-role-admin {
-  color: #fff1c7;
-  background: rgba(217, 153, 45, 0.16);
-  border-color: #dbb25d;
+  color: #f0d978;
+  background: rgba(212, 175, 55, 0.16);
+  border-color: #d4af37;
 }
 
 .app-navigation {
@@ -111,31 +129,33 @@ select:focus {
 .logout-button {
   width: 100%;
   padding: 0.75rem 1rem;
-  color: #e4eefb;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  color: #cbd5e1;
+  background: var(--color-surface);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
   font-weight: bold;
   text-align: left;
 }
 
 .navigation-button:hover,
 .navigation-button.active {
-  color: #173c68;
-  background: #d8eaff;
-  border-color: #b7d5f7;
+  color: #ffffff;
+  background: #1e2130;
+  border-color: #d4af37;
 }
 
 .logout-button {
-  color: #173c68;
-  background: #d8eaff;
-  border-color: #b7d5f7;
+  color: #ffffff;
+  background: var(--gradient-action);
+  border-color: transparent;
   text-align: center;
+  box-shadow: var(--shadow-action);
 }
 
 .logout-button:hover {
-  background: #c5ddf6;
-  border-color: #9fc2e9;
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
 }
 
 .app-content {
@@ -144,7 +164,77 @@ select:focus {
   flex-direction: column;
   min-width: 0;
   min-height: 100vh;
+  color: var(--color-text);
   background: var(--color-bg);
+}
+
+main {
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+main > div,
+main > section,
+main > article {
+  box-sizing: border-box;
+}
+
+.module-container,
+.tabla-container,
+.table-wrapper,
+.contenedor-vista {
+  width: 100%;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--color-text);
+}
+
+th {
+  color: #d4af37;
+  background: #10121a;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  color: var(--color-text-soft);
+}
+
+tr:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0c0d12;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #343746;
+  border-radius: 4px;
+  border: 1px solid #141620;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
 }
 
 @media (max-width: 760px) {
