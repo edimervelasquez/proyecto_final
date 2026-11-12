@@ -39,7 +39,8 @@ select:focus {
   min-height: 100vh;
   width: 100%;
   padding-left: 260px;
-  background: var(--color-bg);
+  color: #e2e8f0;
+  background: #0f172a;
 }
 
 .app-sidebar {
@@ -59,13 +60,13 @@ select:focus {
   overflow-y: auto;
   overscroll-behavior: contain;
   color: #eff6ff;
-  background: #193b63;
-  border-right: 1px solid #2e5585;
+  background: #0f172a;
+  border-right: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .app-brand {
   margin: 0 0 1.5rem;
-  color: #d7eaff;
+  color: #f8fafc;
   text-align: center;
   font-family: Georgia, serif;
   font-size: 1.4rem;
@@ -77,8 +78,8 @@ select:focus {
   gap: 0.35rem;
   margin-bottom: 1.5rem;
   padding: 0.85rem;
-  background: rgba(233, 243, 255, 0.1);
-  border: 1px solid rgba(205, 225, 249, 0.24);
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 8px;
   font-size: 0.85rem;
 }
@@ -86,9 +87,9 @@ select:focus {
 .user-role {
   align-self: flex-start;
   padding: 0.2rem 0.6rem;
-  color: #d7eaff;
-  background: rgba(96, 165, 250, 0.17);
-  border: 1px solid #74a8e8;
+  color: #bae6fd;
+  background: rgba(2, 132, 199, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.45);
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: bold;
@@ -96,9 +97,9 @@ select:focus {
 }
 
 .user-role-admin {
-  color: #fff1c7;
-  background: rgba(217, 153, 45, 0.16);
-  border-color: #dbb25d;
+  color: #fde68a;
+  background: rgba(217, 119, 6, 0.18);
+  border-color: rgba(245, 158, 11, 0.5);
 }
 
 .app-navigation {
@@ -111,7 +112,7 @@ select:focus {
 .logout-button {
   width: 100%;
   padding: 0.75rem 1rem;
-  color: #e4eefb;
+  color: #cbd5e1;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -121,21 +122,21 @@ select:focus {
 
 .navigation-button:hover,
 .navigation-button.active {
-  color: #173c68;
-  background: #d8eaff;
-  border-color: #b7d5f7;
+  color: #f0f9ff;
+  background: rgba(2, 132, 199, 0.22);
+  border-color: rgba(56, 189, 248, 0.35);
 }
 
 .logout-button {
-  color: #173c68;
-  background: #d8eaff;
-  border-color: #b7d5f7;
+  color: #0f172a;
+  background: #38bdf8;
+  border-color: #38bdf8;
   text-align: center;
 }
 
 .logout-button:hover {
-  background: #c5ddf6;
-  border-color: #9fc2e9;
+  background: #7dd3fc;
+  border-color: #7dd3fc;
 }
 
 .app-content {
@@ -144,7 +145,8 @@ select:focus {
   flex-direction: column;
   min-width: 0;
   min-height: 100vh;
-  background: var(--color-bg);
+  color: #e2e8f0;
+  background: #0f172a;
 }
 
 @media (max-width: 760px) {

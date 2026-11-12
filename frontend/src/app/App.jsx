@@ -9,6 +9,7 @@ import InventarioPrendas from '../pages/inventory/InventarioPrendas';
 import Ventas from '../pages/inventory/Ventas';
 import Login from '../pages/auth/Login';
 import GestionEmpleados from '../pages/users/GestionEmpleados';
+import Mermas from '../pages/production/Mermas';
 import Produccion from '../pages/production/Produccion';
 import '../styles/variable.css';
 import '../styles/global.css';
@@ -71,6 +72,7 @@ export default function App() {
     dashboard: admin ? <Dashboard user={user} /> : null,
     empleados: admin ? <GestionEmpleados user={user} /> : null,
     produccion: !vendedor ? <Produccion user={user} /> : null,
+    mermas: !vendedor ? <Mermas user={user} /> : null,
     insumos: !vendedor ? <IngresoInsumos user={user} /> : null,
     ficha: !vendedor ? <FichaTecnica user={user} /> : null,
     calidad: !vendedor ? <Calidad user={user} /> : null,

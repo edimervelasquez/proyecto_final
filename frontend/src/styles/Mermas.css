@@ -1,0 +1,70 @@
+.merma-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.merma-form-grid select,
+.merma-form-grid input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.8rem;
+  color: #ffffff;
+  background: #09090b;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+}
+
+.merma-form-grid :is(select, input):focus {
+  border-color: #f59e0b;
+  outline: none;
+}
+
+.merma-form-grid :is(select, input):disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.merma-lista {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+}
+
+.merma-lista h3 {
+  margin: 0 0 1rem;
+  color: #ffffff;
+}
+
+.merma-table-scroll {
+  overflow-x: auto;
+}
+
+.merma-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.merma-table th,
+.merma-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #374151;
+}
+
+.merma-table th {
+  color: #f59e0b;
+  background: #18181b;
+}
+
+.merma-ayuda {
+  margin: 0.75rem 0 0;
+  color: #fcd34d;
+}
+
+.merma-error {
+  color: #fca5a5;
+}

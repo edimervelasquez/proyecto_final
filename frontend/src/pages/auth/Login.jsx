@@ -56,7 +56,7 @@ export default function Login({ onLoginSuccess }) {
         <div className="login-branding">
           <div className="branding-header">
             <ShieldCheck size={56} color="#3478c8" />
-            <h1>SIES Textil</h1>
+            <h1>SIES Yullita</h1>
             <p>Sistema Integral de Gestión y Control de Producción</p>
           </div>
 
@@ -80,7 +80,7 @@ export default function Login({ onLoginSuccess }) {
           </div>
 
           <div className="branding-footer">
-            <p>© 2026 Creaciones Yuyita. Todos los derechos reservados.</p>
+            <p>© 2026 Creaciones Yullita. Todos los derechos reservados.</p>
           </div>
         </div>
 
@@ -100,10 +100,11 @@ export default function Login({ onLoginSuccess }) {
           {!esRegistro ? (
             <form onSubmit={handleLoginSubmit} className="auth-form">
               <div className="form-group">
-                <label>Correo Electrónico</label>
+                <label htmlFor="login-correo">Correo Electrónico</label>
                 <div className="input-wrapper">
                   <Mail className="input-icon" size={18} />
                   <input
+                    id="login-correo"
                     type="email"
                     required
                     placeholder="ejemplo@yuyita.com"
@@ -114,10 +115,11 @@ export default function Login({ onLoginSuccess }) {
               </div>
 
               <div className="form-group">
-                <label>Contraseña</label>
+                <label htmlFor="login-contrasenia">Contraseña</label>
                 <div className="input-wrapper">
                   <Lock className="input-icon" size={18} />
                   <input
+                    id="login-contrasenia"
                     type="password"
                     required
                     placeholder="••••••••"
@@ -134,10 +136,11 @@ export default function Login({ onLoginSuccess }) {
           ) : (
             <form onSubmit={handleRegistroSubmit} className="auth-form">
               <div className="form-group">
-                <label>Nombre Completo</label>
+                <label htmlFor="registro-empleado">Nombre Completo</label>
                 <div className="input-wrapper">
                   <User className="input-icon" size={18} />
                   <input
+                    id="registro-empleado"
                     type="text"
                     required
                     placeholder="Ej: Carlos Pérez"
@@ -148,10 +151,11 @@ export default function Login({ onLoginSuccess }) {
               </div>
 
               <div className="form-group">
-                <label>Cédula / Documento</label>
+                <label htmlFor="registro-cedula">Cédula / Documento</label>
                 <div className="input-wrapper">
                   <CreditCard className="input-icon" size={18} />
                   <input
+                    id="registro-cedula"
                     type="text"
                     required
                     placeholder="Ej: 1018222333"
@@ -162,10 +166,11 @@ export default function Login({ onLoginSuccess }) {
               </div>
 
               <div className="form-group">
-                <label>Correo Electrónico</label>
+                <label htmlFor="registro-correo">Correo Electrónico</label>
                 <div className="input-wrapper">
                   <Mail className="input-icon" size={18} />
                   <input
+                    id="registro-correo"
                     type="email"
                     required
                     placeholder="carlos@gmail.com"
@@ -176,10 +181,11 @@ export default function Login({ onLoginSuccess }) {
               </div>
 
               <div className="form-group">
-                <label>Contraseña</label>
+                <label htmlFor="registro-contrasenia">Contraseña</label>
                 <div className="input-wrapper">
                   <Lock className="input-icon" size={18} />
                   <input
+                    id="registro-contrasenia"
                     type="password"
                     required
                     minLength={12}
@@ -192,8 +198,9 @@ export default function Login({ onLoginSuccess }) {
               </div>
 
               <div className="form-group">
-                <label>Rol solicitado</label>
+                <label htmlFor="registro-rol">Rol solicitado</label>
                 <select
+                  id="registro-rol"
                   value={registroData.id_rol}
                   onChange={(e) => setRegistroData({
                     ...registroData,

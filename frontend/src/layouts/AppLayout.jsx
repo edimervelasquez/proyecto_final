@@ -1,5 +1,6 @@
 const NAVIGATION_ITEMS = [
   { id: 'produccion', label: '🧵 Producción' },
+  { id: 'mermas', label: '♻️ Mermas' },
   { id: 'insumos', label: '📦 Ingreso Insumos' },
   { id: 'ficha', label: '📋 Ficha Técnica' },
   { id: 'calidad', label: '✅ Control Calidad' },
