@@ -195,7 +195,7 @@
   border-left: 3px solid #6da4df;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   color: var(--color-text-soft);
-  background: #eaf3ff;
+  background: #1f2937;
   font-size: 0.88rem;
   line-height: 1.5;
 }
@@ -236,7 +236,7 @@
 
 .trazabilidad-table th {
   color: var(--color-brand-900);
-  background: #eaf3ff;
+  background: #1f2937;
   font-weight: 600;
 }
 
@@ -349,7 +349,7 @@
 
 .dashboard-stock-alerts {
   border-color: rgba(217, 119, 6, 0.3);
-  background: #fffbeb;
+  background: rgba(217, 119, 6, 0.12);
 }
 
 .dashboard-stock-alerts h2 {
@@ -359,7 +359,7 @@
 .dashboard-finance-note {
   border-left-color: var(--color-amber-500);
   color: var(--color-text-soft);
-  background: #f8fafc;
+  background: #1f2937;
 }
 
 .trazabilidad-card {
@@ -384,9 +384,123 @@
 }
 
 .trazabilidad-table tbody tr:nth-child(even) {
-  background: #f8fafc;
+  background: #1f2937;
 }
 
 .trazabilidad-table tbody tr:hover {
-  background: #f0f9ff;
+  background: rgba(8, 145, 178, 0.1);
+}
+
+#root .dashboard-container {
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+#root .dashboard-header {
+  align-items: center;
+  gap: 1.5rem;
+  padding: clamp(1.15rem, 2vw, 1.6rem);
+}
+
+#root .dashboard-metrics-grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 1.25rem;
+}
+
+#root .dashboard-metric-section {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-width: 0;
+  padding: clamp(1rem, 1.8vw, 1.4rem);
+  border: 1px solid #1f2937;
+  border-radius: var(--radius-md);
+  background: #111827;
+}
+
+#root .dashboard-section-title {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #1f2937;
+  font-size: 1.05rem;
+}
+
+#root .metrics-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 0.85rem;
+}
+
+#root .metric-card {
+  min-height: 108px;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid #1f2937;
+  border-left: 3px solid #0891b2;
+  border-radius: 12px;
+  background: #111827;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+#root .metric-card:nth-child(3n) {
+  border-left-color: #d97706;
+}
+
+#root .metric-card:hover {
+  transform: translateY(-2px);
+  border-color: #374151;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+#root .card-icon.gold {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  border-radius: 11px;
+}
+
+#root .card-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+#root .card-title {
+  min-height: 2.5em;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+#root .card-value {
+  margin: 0;
+  font-size: clamp(1rem, 1.35vw, 1.25rem);
+  line-height: 1.25;
+}
+
+#root .dashboard-finance-note {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  #root .dashboard-container {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  #root .dashboard-metrics-grid,
+  #root .metrics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #root .dashboard-metric-section {
+    padding: 1rem;
+  }
+
+  #root .metric-card {
+    min-height: 96px;
+  }
 }

@@ -87,21 +87,27 @@ export default function Dashboard() {
 
   const gruposMetricas = resumen ? [
     {
-      titulo: 'Inventario y producción',
+      titulo: 'Inventario',
       metricas: [
         { titulo: 'Referencias de insumos', valor: resumen.insumos_catalogo, icono: <Package size={22} /> },
         { titulo: 'Insumos bajo mínimo', valor: resumen.insumos_bajo_minimo, icono: <Package size={22} /> },
         { titulo: 'Unidades en inventario', valor: resumen.unidades_inventario, icono: <ClipboardList size={22} /> },
-        { titulo: 'Órdenes activas', valor: resumen.ordenes_activas, icono: <Scissors size={22} /> },
+        { titulo: 'Ingresos de insumos', valor: resumen.ingresos_registrados, icono: <Package size={22} /> },
+        { titulo: 'Valor registrado de insumos', valor: formatoCOP(resumen.valor_insumos_recibidos), icono: <DollarSign size={22} /> },
       ],
     },
     {
-      titulo: 'Calidad y operación',
+      titulo: 'Calidad',
       metricas: [
         { titulo: 'Aprobación de calidad', valor: `${resumen.aprobacion_calidad}%`, icono: <CheckCircle size={22} /> },
+        { titulo: 'Pérdida estimada por calidad', valor: formatoCOP(resumen.finanzas?.perdida_estimada_calidad), icono: <Scissors size={22} /> },
+      ],
+    },
+    {
+      titulo: 'Operación',
+      metricas: [
+        { titulo: 'Órdenes activas', valor: resumen.ordenes_activas, icono: <Scissors size={22} /> },
         { titulo: 'Operarios activos', valor: resumen.operarios_activos, icono: <Users size={22} /> },
-        { titulo: 'Ingresos de insumos', valor: resumen.ingresos_registrados, icono: <Package size={22} /> },
-        { titulo: 'Valor registrado de insumos', valor: formatoCOP(resumen.valor_insumos_recibidos), icono: <DollarSign size={22} /> },
         { titulo: 'Retrasos abiertos', valor: resumen.retrasos_abiertos, icono: <ClipboardList size={22} /> },
         {
           titulo: 'Tiempo perdido por retrasos',
@@ -118,7 +124,6 @@ export default function Dashboard() {
         { titulo: 'Ventas al detal', valor: formatoCOP(resumen.finanzas?.ventas_detal), icono: <DollarSign size={22} /> },
         { titulo: 'Costo de prendas vendidas', valor: formatoCOP(resumen.finanzas?.costo_productos_vendidos), icono: <Package size={22} /> },
         { titulo: 'Margen bruto', valor: formatoCOP(resumen.finanzas?.margen_bruto), icono: <TrendingUp size={22} /> },
-        { titulo: 'Pérdida estimada por calidad', valor: formatoCOP(resumen.finanzas?.perdida_estimada_calidad), icono: <Scissors size={22} /> },
         { titulo: 'Margen después de rechazos', valor: formatoCOP(resumen.finanzas?.margen_despues_rechazos), icono: <TrendingUp size={22} /> },
       ],
     },
@@ -145,28 +150,30 @@ export default function Dashboard() {
       {error && <p className="trazabilidad-error" role="alert">{error}</p>}
       {!cargando && !error && resumen && (
         <>
-          {gruposMetricas.map((grupo, indice) => (
-            <section
-              className="dashboard-metric-section"
-              key={grupo.titulo}
-              aria-labelledby={`dashboard-metrics-${indice}`}
-            >
-              <h2 id={`dashboard-metrics-${indice}`} className="dashboard-section-title">
-                {grupo.titulo}
-              </h2>
-              <div className="metrics-grid">
-                {grupo.metricas.map((metrica) => (
-                  <article className="metric-card" key={metrica.titulo}>
-                    <div className="card-icon gold">{metrica.icono}</div>
-                    <div className="card-info">
-                      <span className="card-title">{metrica.titulo}</span>
-                      <h3 className="card-value">{metrica.valor}</h3>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
+          <div className="dashboard-metrics-grid">
+            {gruposMetricas.map((grupo, indice) => (
+              <section
+                className="dashboard-metric-section"
+                key={grupo.titulo}
+                aria-labelledby={`dashboard-metrics-${indice}`}
+              >
+                <h2 id={`dashboard-metrics-${indice}`} className="dashboard-section-title">
+                  {grupo.titulo}
+                </h2>
+                <div className="metrics-grid">
+                  {grupo.metricas.map((metrica) => (
+                    <article className="metric-card" key={metrica.titulo}>
+                      <div className="card-icon gold">{metrica.icono}</div>
+                      <div className="card-info">
+                        <span className="card-title">{metrica.titulo}</span>
+                        <h3 className="card-value">{metrica.valor}</h3>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
 
           <section className="dashboard-stock-alerts" aria-labelledby="stock-alerts-title">
             <h2 id="stock-alerts-title">Alertas de materia prima</h2>
