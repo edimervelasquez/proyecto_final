@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
 import TrazabilidadTable from '../../components/TrazabilidadTable';
-import { comercialService } from '../../services/comercialService';
-import { insumoService } from '../../services/insumoService';
+import useInventarioPrendas from '../../hooks/useInventarioPrendas';
 import '../../styles/Comercial.css';
 
 const UBICACIONES = [
@@ -18,123 +16,25 @@ const moneda = (valor) => new Intl.NumberFormat('es-CO', {
 
 export default function InventarioPrendas({ user }) {
   const admin = user?.id_rol === 1;
-  const [productos, setProductos] = useState([]);
-  const [inventario, setInventario] = useState([]);
-  const [movimientos, setMovimientos] = useState([]);
-  const [seleccion, setSeleccion] = useState(null);
-  const [traslado, setTraslado] = useState({
-    sku_prenda: '',
-    ubicacion_origen: 'BODEGA_LOCAL',
-    ubicacion_destino: 'LOCAL',
-    cantidad: '',
-  });
-  const [inventarioInicial, setInventarioInicial] = useState({
-    sku_prenda: '',
-    ubicacion: 'BODEGA_LOCAL',
-    cantidad: '',
-    costo_unitario: '',
-  });
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState('');
-
-  const cargar = useCallback(() => Promise.all([
-    insumoService.obtenerProductos(),
-    comercialService.obtenerInventario(),
-    comercialService.obtenerMovimientos(),
-  ]), []);
-
-  useEffect(() => {
-    cargar().then(([listaProductos, listaInventario, listaMovimientos]) => {
-      setProductos(listaProductos);
-      setInventario(listaInventario);
-      setMovimientos(listaMovimientos);
-      setError('');
-      setCargando(false);
-    }).catch((err) => {
-      setError(err.message || 'No se pudo cargar el inventario.');
-      setCargando(false);
-    });
-  }, [cargar]);
-
-  const cambiarPrecio = (event) => {
-    setSeleccion({ ...seleccion, [event.target.name]: event.target.value });
-  };
-
-  const guardarPrecios = async (event) => {
-    event.preventDefault();
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await insumoService.actualizarPrecios(
-        seleccion.sku_prenda,
-        {
-          precio_mayorista: Number(seleccion.precio_mayorista),
-          precio_detal: Number(seleccion.precio_detal),
-          costo_mano_obra: Number(seleccion.costo_mano_obra),
-        },
-      );
-      setMensaje({ texto: respuesta.mensaje, tipo: 'exito' });
-      setSeleccion(null);
-      const [listaProductos, listaInventario, listaMovimientos] = await cargar();
-      setProductos(listaProductos);
-      setInventario(listaInventario);
-      setMovimientos(listaMovimientos);
-    } catch (err) {
-      setMensaje({ texto: err.message || 'No se pudieron guardar los precios.', tipo: 'error' });
-    }
-  };
-
-  const registrarTraslado = async (event) => {
-    event.preventDefault();
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await comercialService.trasladar({
-        ...traslado,
-        cantidad: Number(traslado.cantidad),
-      });
-      setMensaje({ texto: respuesta.mensaje, tipo: 'exito' });
-      setTraslado({ ...traslado, cantidad: '' });
-      const [listaProductos, listaInventario, listaMovimientos] = await cargar();
-      setProductos(listaProductos);
-      setInventario(listaInventario);
-      setMovimientos(listaMovimientos);
-    } catch (err) {
-      setMensaje({ texto: err.message || 'No se pudo realizar el traslado.', tipo: 'error' });
-    }
-  };
-
-  const registrarInventarioInicial = async (event) => {
-    event.preventDefault();
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await comercialService.registrarInventarioInicial({
-        ...inventarioInicial,
-        cantidad: Number(inventarioInicial.cantidad),
-        costo_unitario: Number(inventarioInicial.costo_unitario),
-      });
-      setMensaje({ texto: respuesta.mensaje, tipo: 'exito' });
-      setInventarioInicial({ ...inventarioInicial, cantidad: '', costo_unitario: '' });
-      const [listaProductos, listaInventario, listaMovimientos] = await cargar();
-      setProductos(listaProductos);
-      setInventario(listaInventario);
-      setMovimientos(listaMovimientos);
-    } catch (err) {
-      setMensaje({ texto: err.message || 'No se pudo registrar el inventario inicial.', tipo: 'error' });
-    }
-  };
-
-  const ubicacionTieneMovimiento = (sku, ubicacion) => movimientos.some(
-    (movimiento) => movimiento.sku_prenda === sku && movimiento.ubicacion === ubicacion,
-  );
-
-  const movimientosTabla = movimientos.map((movimiento) => ({
-    ...movimiento,
-    referencia: `${movimiento.tipo} · ${movimiento.referencia || ''}`,
-    detalle: `${movimiento.producto} · ${movimiento.cantidad} unidades · ${movimiento.ubicacion}`,
-    fecha_registro: movimiento.fecha,
-    proceso: movimiento.ubicacion,
-    estado: movimiento.tipo,
-  }));
+  const {
+    productos,
+    inventario,
+    movimientosTabla,
+    seleccion,
+    setSeleccion,
+    traslado,
+    setTraslado,
+    inventarioInicial,
+    setInventarioInicial,
+    mensaje,
+    cargando,
+    error,
+    cambiarPrecio,
+    guardarPrecios,
+    registrarTraslado,
+    registrarInventarioInicial,
+    ubicacionTieneMovimiento,
+  } = useInventarioPrendas();
 
   return (
     <div className="view-container comercial-container">

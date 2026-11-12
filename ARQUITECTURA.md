@@ -23,6 +23,12 @@ repositorios concentran las consultas SQL. En el frontend, las páginas
 coordinan estado y formularios, los componentes reutilizables presentan la
 interfaz y `src/services` centraliza las llamadas HTTP.
 
+Las pantallas de producción e inventario separan el estado, la carga de datos
+y las acciones de formulario en hooks de `frontend/src/hooks`; las páginas
+conservan la composición visual y sus componentes y clases CSS existentes. La
+lógica de registro y consulta de trazos de producción vive en
+`backend/services/trazo_service.py`; las rutas conservan sus mismos endpoints.
+
 ## Reglas para cambios nuevos
 
 - Validar la forma de las solicitudes con esquemas Pydantic.

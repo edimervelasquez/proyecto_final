@@ -1,201 +1,35 @@
-import { useCallback, useEffect, useState } from 'react';
 import FormularioProduccion from '../../components/forms/FormularioProduccion';
 import TrazabilidadTable from '../../components/TrazabilidadTable';
-import { insumoService } from '../../services/insumoService';
-import { produccionService } from '../../services/produccionService';
+import useProduccion, { MOTIVOS_RETRASO } from '../../hooks/useProduccion';
 import '../../styles/Produccion.css';
 import '../../styles/Retrasos.css';
 
-const MOTIVOS_RETRASO = [
-  'Reparación de prendas con defecto',
-  'Falta de materia prima',
-  'Falla de maquinaria',
-  'Espera de instrucciones o aprobación',
-  'Otro',
-];
-
-const formularioVacio = {
-  sku_prenda: '',
-  id_area: '',
-  cantidad_a_producir: '',
-  fecha_entrega: '',
-  canal_destino: 'DETAL',
-};
-
 const Produccion = ({ user }) => {
-  const [formData, setFormData] = useState(formularioVacio);
-  const [fichas, setFichas] = useState([]);
-  const [areas, setAreas] = useState([]);
-  const [ordenes, setOrdenes] = useState([]);
-  const [retrasos, setRetrasos] = useState([]);
-  const [ordenRetraso, setOrdenRetraso] = useState('');
-  const [motivoRetraso, setMotivoRetraso] = useState(MOTIVOS_RETRASO[0]);
-  const [detalleRetraso, setDetalleRetraso] = useState('');
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
-  const [cargando, setCargando] = useState(false);
-  const [cargandoLista, setCargandoLista] = useState(true);
-  const [errorLista, setErrorLista] = useState('');
-  const puedeReportarRetraso = user?.id_rol === 1 || user?.id_rol === 2;
-
-  const cargarDatos = useCallback(() => (
-    Promise.all([
-        insumoService.obtenerFichas(),
-        produccionService.obtenerAreas(),
-        produccionService.obtenerOrdenes(),
-        produccionService.obtenerRetrasos(),
-      ]).then(([fichasTecnicas, areasProduccion, registros, listaRetrasos]) => ({
-        fichasTecnicas,
-        areasProduccion,
-        registros,
-        listaRetrasos,
-      }))
-  ), []);
-
-  useEffect(() => {
-    cargarDatos()
-      .then(({ fichasTecnicas, areasProduccion, registros, listaRetrasos }) => {
-        setFichas(fichasTecnicas);
-        setAreas(areasProduccion);
-        setOrdenes(registros);
-        setRetrasos(listaRetrasos);
-        const corte = areasProduccion.find((area) => area.nombre_area === 'Corte');
-        if (corte) {
-          setFormData((actual) => (
-            actual.id_area ? actual : { ...actual, id_area: String(corte.id_area) }
-          ));
-        }
-        setErrorLista('');
-        setCargandoLista(false);
-      })
-      .catch((error) => {
-        setErrorLista(error.message || 'No se pudieron cargar las órdenes de producción.');
-        setCargandoLista(false);
-      });
-  }, [cargarDatos]);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setCargando(true);
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await produccionService.registrarOrden({
-        sku_prenda: formData.sku_prenda,
-        id_area: Number(formData.id_area),
-        cantidad_a_producir: Number(formData.cantidad_a_producir),
-        fecha_entrega: formData.fecha_entrega,
-        canal_destino: formData.canal_destino,
-      });
-      setMensaje({ texto: respuesta.mensaje, tipo: 'exito' });
-      setFormData(formularioVacio);
-      setCargandoLista(true);
-      const { fichasTecnicas, areasProduccion, registros, listaRetrasos } = await cargarDatos();
-      setFichas(fichasTecnicas);
-      setAreas(areasProduccion);
-      setOrdenes(registros);
-      setRetrasos(listaRetrasos);
-      setErrorLista('');
-      setCargandoLista(false);
-    } catch (error) {
-      setMensaje({
-        texto: error.message || 'No se pudo registrar la orden.',
-        tipo: 'error',
-      });
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const iniciarRetraso = async (event) => {
-    event.preventDefault();
-    setCargando(true);
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await produccionService.registrarRetraso(
-        Number(ordenRetraso),
-        {
-          motivo: motivoRetraso,
-          detalle: detalleRetraso.trim() || null,
-        },
-      );
-      setMensaje({ texto: respuesta.mensaje, tipo: 'exito' });
-      setOrdenRetraso('');
-      setMotivoRetraso(MOTIVOS_RETRASO[0]);
-      setDetalleRetraso('');
-      const { fichasTecnicas, areasProduccion, registros, listaRetrasos } = await cargarDatos();
-      setFichas(fichasTecnicas);
-      setAreas(areasProduccion);
-      setOrdenes(registros);
-      setRetrasos(listaRetrasos);
-      setErrorLista('');
-      setCargandoLista(false);
-    } catch (error) {
-      setMensaje({ texto: error.message || 'No se pudo registrar el retraso.', tipo: 'error' });
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const reanudarOrden = async (idRetraso) => {
-    setCargando(true);
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await produccionService.reanudarProduccion(idRetraso);
-      const duracion = respuesta.minutos_detenida;
-      const tiempo = duracion >= 60
-        ? `${Math.floor(duracion / 60)} h ${duracion % 60} min`
-        : `${duracion} min`;
-      setMensaje({
-        texto: `${respuesta.mensaje} Tiempo detenido: ${tiempo}.`,
-        tipo: 'exito',
-      });
-      const { fichasTecnicas, areasProduccion, registros, listaRetrasos } = await cargarDatos();
-      setFichas(fichasTecnicas);
-      setAreas(areasProduccion);
-      setOrdenes(registros);
-      setRetrasos(listaRetrasos);
-      setErrorLista('');
-      setCargandoLista(false);
-    } catch (error) {
-      setMensaje({ texto: error.message || 'No se pudo reanudar la orden.', tipo: 'error' });
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const avanzarOrden = async (orden) => {
-    setCargando(true);
-    setMensaje({ texto: '', tipo: '' });
-    try {
-      const respuesta = await produccionService.avanzarEtapa(
-        orden.id_orden,
-        orden.id_area_siguiente,
-      );
-      setMensaje({ texto: respuesta.mensaje, tipo: 'exito' });
-      const { fichasTecnicas, areasProduccion, registros, listaRetrasos } = await cargarDatos();
-      setFichas(fichasTecnicas);
-      setAreas(areasProduccion);
-      setOrdenes(registros);
-      setRetrasos(listaRetrasos);
-      setErrorLista('');
-      setCargandoLista(false);
-    } catch (error) {
-      setMensaje({ texto: error.message || 'No se pudo avanzar la etapa.', tipo: 'error' });
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const duracion = (segundos) => {
-    const minutos = Math.floor(segundos / 60);
-    if (minutos < 60) return `${minutos} min`;
-    return `${Math.floor(minutos / 60)} h ${minutos % 60} min`;
-  };
-
-  const filas = ordenes.map((orden) => ({
-    ...orden,
-    referencia: `OP-${orden.id_orden}`,
-    detalle: `${orden.sku_prenda} · ${orden.cantidad} unidades · ${orden.area}`,
-  }));
+  const {
+    formData,
+    fichas,
+    areas,
+    ordenes,
+    retrasos,
+    ordenRetraso,
+    setOrdenRetraso,
+    motivoRetraso,
+    setMotivoRetraso,
+    detalleRetraso,
+    setDetalleRetraso,
+    mensaje,
+    cargando,
+    cargandoLista,
+    errorLista,
+    puedeReportarRetraso,
+    filas,
+    handleSubmit,
+    iniciarRetraso,
+    reanudarOrden,
+    avanzarOrden,
+    manejarCambioFormulario,
+    duracion,
+  } = useProduccion(user);
 
   return (
     <div className="view-container">
@@ -214,10 +48,7 @@ const Produccion = ({ user }) => {
         formData={formData}
         fichas={fichas}
         areas={areas}
-        onChange={(event) => setFormData({
-          ...formData,
-          [event.target.name]: event.target.value,
-        })}
+        onChange={manejarCambioFormulario}
         onSubmit={handleSubmit}
         cargando={cargando || cargandoLista}
       />
