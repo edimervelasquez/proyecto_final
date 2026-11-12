@@ -55,8 +55,8 @@ export default function Login({ onLoginSuccess }) {
         {/* PANEL IZQUIERDO - BRANDING */}
         <div className="login-branding">
           <div className="branding-header">
-            <ShieldCheck size={56} color="#3478c8" />
-            <h1>SIES Textil</h1>
+            <ShieldCheck size={56} color="#d4af37" />
+            <h1>SIES Yullita</h1>
             <p>Sistema Integral de Gestión y Control de Producción</p>
           </div>
 

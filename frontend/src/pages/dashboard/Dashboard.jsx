@@ -128,7 +128,7 @@ export default function Dashboard() {
     <div className="dashboard-container">
       <header className="dashboard-header">
         <div>
-          <p className="dashboard-eyebrow">SIES Textil</p>
+          <p className="dashboard-eyebrow">SIES Yullita</p>
           <h1 className="dashboard-title">Panel de control</h1>
           <p className="dashboard-subtitle">Resumen de inventario, producción y resultados del taller.</p>
         </div>
