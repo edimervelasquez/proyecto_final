@@ -11,7 +11,7 @@ DEFAULT_ENVIRONMENT = {
     "APP_ENV": lambda: "production",
     "PASSWORD_MIN_LENGTH": lambda: "12",
     "DATABASE_URL": lambda: (
-        "mysql+pymysql://root:123456@localhost/yullita_creaciones"
+        "mysql+pymysql://root:root1234@localhost/yullita_creaciones"
     ),
     "HOST": lambda: "127.0.0.1",
     "PORT": lambda: "8000",

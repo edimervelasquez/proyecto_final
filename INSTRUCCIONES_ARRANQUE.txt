@@ -27,7 +27,7 @@ BACKEND (FastAPI)
 
 4. Instalar las dependencias:
 
-   pip install -r requirements.txt
+   .\venv\Scripts\Activate.ps1
 
 5. Iniciar MySQL y conservar la base existente del diagrama. Antes del primer
    arranque con esta versión, realiza una copia de seguridad. El backend
