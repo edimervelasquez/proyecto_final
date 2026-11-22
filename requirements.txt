@@ -4,3 +4,4 @@ SQLAlchemy
 PyMySQL
 pydantic[email]
 python-dotenv
+Werkzeug
