@@ -1,87 +1,92 @@
 :root,
 body,
 #root {
-  color: #f8fafc;
-  background: #0c0d12;
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
-#root .app-shell,
-#root .app-content,
-#root main,
-#root .dashboard-container,
-#root .view-container,
-#root .comercial-container {
-  color: #f8fafc;
-  background-color: #0c0d12;
+#root {
+  --color-brand-950: #f9fafb;
+  --color-brand-900: #f3f4f6;
+  --color-brand-800: #d1d5db;
+  --color-teal-700: #0891b2;
+  --color-teal-600: #06b6d4;
+  --color-teal-100: rgba(6, 182, 212, 0.12);
+  --color-amber-700: #f59e0b;
+  --color-amber-500: #f59e0b;
+  --color-amber-100: rgba(245, 158, 11, 0.14);
+}
+
+#root :is(main, .app-shell, .app-content, .dashboard-container, .view-container, .comercial-container) {
+  color: var(--color-text);
+  background-color: var(--color-bg);
 }
 
 #root .app-sidebar {
-  color: #f8fafc;
-  background: #0c0d12;
-  border-right-color: rgba(212, 175, 55, 0.2);
+  color: #f9fafb;
+  background:
+    radial-gradient(ellipse at 100% 0, rgba(8, 145, 178, 0.14), transparent 36%),
+    #111827;
+  border-right-color: var(--color-border);
 }
 
-#root .app-sidebar .app-brand,
-#root .app-sidebar h2 {
-  color: #ffffff;
+#root .app-sidebar h2,
+#root .app-sidebar .user-card,
+#root .app-sidebar .user-role {
+  color: #f9fafb;
 }
 
 #root .app-sidebar .user-card {
-  color: #f8fafc;
-  background: #141620;
-  border-color: rgba(212, 175, 55, 0.25);
+  background: #131c2e;
+  border-color: var(--color-border);
 }
 
-#root .app-sidebar .user-role,
+#root .app-sidebar .user-role {
+  color: #67e8f9;
+  background: rgba(8, 145, 178, 0.16);
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
 #root .app-sidebar .user-role-admin {
-  color: #e6c65a;
-  background: rgba(212, 175, 55, 0.12);
-  border-color: rgba(212, 175, 55, 0.4);
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 #root .app-sidebar .navigation-button {
-  color: #cbd5e1;
-  background: #141620;
-  border-color: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  border-color: transparent;
 }
 
-#root .app-sidebar .navigation-button:hover,
-#root .app-sidebar .navigation-button.active {
+#root .app-sidebar .navigation-button:hover {
   color: #ffffff;
-  background: #1e2130;
-  border-color: #d4af37;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: transparent;
+}
+
+#root .app-sidebar .navigation-button.active {
+  color: #22d3ee;
+  background: rgba(6, 182, 212, 0.16);
+  border-color: #06b6d4;
+  box-shadow: inset 3px 0 #06b6d4;
 }
 
 #root .app-sidebar .logout-button {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+#root .app-sidebar .logout-button:hover {
   color: #ffffff;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
-}
-
-#root .app-content :is(input, select, textarea) {
-  border-color: rgba(212, 175, 55, 0.3);
-  color: #f8fafc;
-  background-color: #0f111a;
-}
-
-#root .app-content :is(input, select, textarea)::placeholder {
-  color: #94a3b8;
-}
-
-#root .app-content :is(input, select, textarea):focus {
-  border-color: #d4af37;
-  outline-color: rgba(212, 175, 55, 0.18);
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.12);
-}
-
-#root .app-content .search-box input {
-  border-color: transparent;
-  background: transparent;
-  outline: 0;
-  box-shadow: none;
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(248, 113, 113, 0.5);
 }
 
 #root :is(
+  .view-container,
+  .gestion-container,
+  .dashboard-header,
   .metric-card,
   .dashboard-widget,
   .dashboard-stock-alerts,
@@ -93,212 +98,405 @@ body,
   .retraso-orden,
   .retraso-historico,
   .retraso-form,
+  .merma-lista,
   .table-container,
   .table-wrapper,
   .module-container,
   .tabla-container,
-  .contenedor-vista
+  .contenedor-vista,
+  .login-wrapper,
+  .login-card,
+  .modal-content,
+  .modal-form,
+  [role='dialog']
 ) {
-  color: #f8fafc;
-  background-color: #141620;
-  border-color: rgba(212, 175, 55, 0.25);
+  color: var(--color-text);
+  background-color: #111827;
+  border-color: var(--color-border);
   box-shadow: var(--shadow-card);
 }
 
-#root .dashboard-container .metric-card,
-#root .dashboard-container .dashboard-card,
-#root .dashboard-container .dashboard-widget {
-  color: #f8fafc;
-  background: #141620;
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  box-shadow: var(--shadow-card);
+#root :is(.metric-card, .dashboard-widget, .dashboard-stock-alerts, .form-card, .comercial-panel, .comercial-venta, .trazabilidad-card, .retrasos-panel, .retraso-orden, .retraso-historico, .retraso-form, .merma-lista, .table-container, .table-wrapper, .module-container, .tabla-container, .contenedor-vista, .modal-content) {
+  background-color: #131c2e;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
-#root :is(.dashboard-title, .view-header h1, .view-header h2, .view-header h3) {
-  color: #ffffff;
+#root :is(.view-header h1, .view-header h2, .view-header h3, .dashboard-title, .dashboard-section-title, .login-header h2, .branding-header h1, .form-card-header h3, .comercial-panel h3, .trazabilidad-card h3, .retrasos-panel h3, .retrasos-panel h4, .merma-lista h3, .metric-info h3) {
+  color: #f9fafb;
 }
 
-#root :is(
-  .dashboard-widget h3,
-  .dashboard-stock-alerts h2,
-  .trazabilidad-card h3,
-  .retrasos-panel h3,
-  .retrasos-panel h4,
-  .comercial-panel h3,
-  .form-card-header h3
-) {
-  color: #ffffff;
+#root :is(.view-header p, .dashboard-subtitle, .dashboard-eyebrow, .login-header p, .branding-header p, .branding-footer, .form-card-header p, .card-title, .metric-info span, .trazabilidad-info, .comercial-nota) {
+  color: #9ca3af;
 }
 
-#root .dashboard-eyebrow,
-#root :is(.dashboard-section-title, .badge-modulo, .badge-categoria, .trazabilidad-card h3, .comercial-panel h3) {
-  color: #d4af37;
+#root :is(label, .input-group label, .form-group label, .comercial-form-grid label, .feature-item) {
+  color: #d1d5db;
 }
 
-#root .dashboard-stock-alerts,
-#root .dashboard-stock-alerts li,
-#root .stock-alert-list li,
-#root .stock-minimum-row,
-#root .calidad-ayuda-etapa {
-  border-color: rgba(212, 175, 55, 0.3);
-  color: #e6c65a;
-  background: rgba(212, 175, 55, 0.08);
+#root :is(input, select, textarea, .input-wrapper, .search-box, .modal-form select, .modal-form textarea, .retraso-form select, .retraso-form textarea, .merma-form-grid select, .merma-form-grid input) {
+  color: #f9fafb;
+  background-color: #111827;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-#root :is(.dashboard-stock-alerts li, .dashboard-stock-alerts li span) {
-  color: #cbd5e1;
+#root :is(input, select, textarea)::placeholder,
+#root .input-wrapper input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
 }
 
-#root :is(.dashboard-refresh, .btn-primary, .btn-success, .btn-sies-primary, .btn-add-orden, .btn-add-ficha, .btn-add-auditoria, .comercial-action:not(.secundario), .retraso-button:not(.secundario)) {
-  border-color: transparent;
-  color: #ffffff;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
-  border-radius: 12px;
+#root select option {
+  color: #f9fafb;
+  background-color: #131c2e;
 }
 
-#root :is(.dashboard-refresh:hover:not(:disabled), .btn-primary:hover, .btn-success:hover, .btn-sies-primary:hover, .btn-add-orden:hover, .btn-add-ficha:hover, .btn-add-auditoria:hover, .comercial-action:hover:not(:disabled), .retraso-button:hover:not(:disabled)) {
-  color: #ffffff;
-  background: linear-gradient(135deg, #f05252 0%, #b91c1c 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.55);
+#root :is(input, select, textarea):focus,
+#root .search-box:focus-within,
+#root .input-wrapper:focus-within {
+  border-color: #06b6d4;
+  outline-color: rgba(6, 182, 212, 0.28);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12);
 }
 
-#root :is(.btn-sies-secondary, .comercial-action.secundario, .retraso-button.secundario) {
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  color: #cbd5e1;
-  background: #141620;
-}
-
-#root :is(.search-box, .modal-form select, .modal-form textarea, .retraso-form select, .retraso-form textarea) {
-  border-color: rgba(212, 175, 55, 0.3);
-  color: #f8fafc;
-  background: #0f111a;
-}
-
-#root :is(.search-box input, .input-group input, .stock-minimum-row input, .comercial-form-grid input, .comercial-form-grid select) {
-  color: #f8fafc;
-}
-
-#root :is(
-  .metric-card,
-  .dashboard-widget,
-  .dashboard-stock-alerts,
-  .form-card,
-  .comercial-panel,
-  .comercial-venta,
-  .trazabilidad-card,
-  .retrasos-panel,
-  .table-container,
-  .table-wrapper,
-  .module-container,
-  .tabla-container,
-  .contenedor-vista
-) :is(p, span, label, td, .card-title) {
-  color: #94a3b8;
-}
-
-#root :is(.dashboard-title, .dashboard-section-title, .card-value, .metric-info p, .form-card-header h3) {
-  color: #ffffff;
-}
-
-#root table,
-#root table tr,
-#root .produccion-table,
-#root .ficha-table,
-#root .calidad-table,
-#root .trazabilidad-table,
-#root .comercial-tabla {
-  color: #f8fafc;
+#root .input-wrapper input,
+#root .search-box input {
+  color: #f9fafb;
   background: transparent;
 }
 
-#root table th,
-#root .produccion-table th,
-#root .ficha-table th,
-#root .calidad-table th,
-#root .trazabilidad-table th,
-#root .comercial-tabla th {
-  border-color: rgba(212, 175, 55, 0.25);
-  color: #d4af37;
-  background: #10121a;
+#root :is(.btn-primary, .btn-success, .btn-sies-primary, .btn-add-orden, .btn-add-ficha, .btn-add-auditoria, .dashboard-refresh, .comercial-action:not(.secundario), .retraso-button:not(.secundario)) {
+  color: #0b1120;
+  background: #06b6d4;
+  border-color: #06b6d4;
+  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.2);
 }
 
-#root table td,
-#root .produccion-table td,
-#root .ficha-table td,
-#root .calidad-table td,
-#root .trazabilidad-table td,
-#root .comercial-tabla td {
-  border-color: rgba(148, 163, 184, 0.14);
-  color: #cbd5e1;
+#root :is(.btn-primary, .btn-success, .btn-sies-primary, .btn-add-orden, .btn-add-ficha, .btn-add-auditoria, .dashboard-refresh, .comercial-action:not(.secundario), .retraso-button:not(.secundario)):hover:not(:disabled) {
+  color: #0b1120;
+  background: #0891b2;
+  border-color: #0891b2;
 }
 
-#root table tr:hover,
-#root .produccion-table tr:hover,
-#root .ficha-table tr:hover,
-#root .calidad-table tr:hover {
-  background: rgba(255, 255, 255, 0.025);
+#root :is(.btn-sies-secondary, .comercial-action.secundario, .retraso-button.secundario) {
+  color: #67e8f9;
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.4);
 }
 
-#root :is(.card-icon.gold, .badge-modulo, .badge-categoria, .btn-sies-secondary) {
-  border-color: rgba(212, 175, 55, 0.35);
-  color: #d4af37;
-  background: rgba(212, 175, 55, 0.1);
+#root :is(.badge-modulo, .badge-categoria, .card-icon.gold) {
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.4);
 }
 
-#root :is(.badge-estado.aprobado, .badge-estado.finalizado, .badge-calidad.aprobado, .alerta-sies.exito, .alert-success) {
-  border-color: rgba(34, 197, 94, 0.35);
+#root .card-icon.gold {
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+}
+
+#root :is(table, .produccion-table, .ficha-table, .calidad-table, .trazabilidad-table, .comercial-tabla, .merma-table) {
+  color: #f9fafb;
+  background: transparent;
+}
+
+#root :is(table th, .produccion-table th, .ficha-table th, .calidad-table th, .trazabilidad-table th, .comercial-tabla th, .merma-table th) {
+  color: #22d3ee;
+  background: #0b1120;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#root :is(table td, .produccion-table td, .ficha-table td, .calidad-table td, .trazabilidad-table td, .comercial-tabla td, .merma-table td) {
+  color: #d1d5db;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#root :is(table tbody tr:hover, .produccion-table tbody tr:hover, .ficha-table tbody tr:hover, .calidad-table tbody tr:hover, .trazabilidad-table tbody tr:hover, .comercial-tabla tbody tr:hover, .merma-table tbody tr:hover) {
+  background: rgba(6, 182, 212, 0.1);
+}
+
+#root table tbody tr:nth-child(even) {
+  background-color: #131c2e;
+}
+
+#root :is(.dashboard-stock-alerts, .stock-alert-list li) {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+#root :is(.dashboard-stock-alerts h2, .dashboard-stock-alerts li, .dashboard-stock-alerts li span, .stock-alert-list li span) {
+  color: #f59e0b;
+}
+
+#root .stock-minimum-row {
+  color: #d1d5db;
+  background-color: #131c2e;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#root .stock-minimum-row span {
+  color: #94a3b8;
+}
+
+#root :is(.calidad-ayuda-etapa, .dashboard-finance-note) {
+  color: #67e8f9;
+  background-color: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.28);
+}
+
+#root .calidad-ayuda-etapa p {
+  color: #67e8f9;
+}
+
+#root :is(.alerta-sies.exito, .alert-success, .badge-estado.aprobado, .badge-estado.finalizado, .badge-calidad.aprobado) {
   color: #86efac;
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba(22, 101, 52, 0.22);
+  border-color: rgba(74, 222, 128, 0.4);
 }
 
-#root :is(.badge-estado.pendiente, .badge-estado.confeccion, .badge-calidad.pendiente, .retraso-alerta) {
-  border-color: rgba(212, 175, 55, 0.35);
-  color: #fcd34d;
-  background: rgba(212, 175, 55, 0.1);
-}
-
-#root :is(.badge-estado.inactivo, .badge-calidad.rechazado, .alerta-sies.error, .alert-error) {
-  border-color: rgba(239, 68, 68, 0.35);
+#root :is(.alerta-sies.error, .alert-error, .badge-estado.inactivo, .badge-calidad.rechazado) {
   color: #fca5a5;
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(185, 28, 28, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
 }
 
-#root .badge-estado.corte {
-  border-color: rgba(59, 130, 246, 0.35);
-  color: #93c5fd;
-  background: rgba(59, 130, 246, 0.12);
+#root :is(.badge-estado.pendiente, .badge-estado.confeccion, .badge-calidad.pendiente) {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
-#root :is(.trazabilidad-error, .error-message, .error) {
+#root :is(.badge-estado.corte, .badge-modulo, .badge-categoria) {
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+#root :is(.trazabilidad-error, .error-message, .error, .merma-error) {
   color: #fca5a5;
 }
 
 #root :is(.btn-icon.edit, .btn-accion.btn-aprobar, .btn-accion.btn-reactivar) {
-  color: #d4af37;
+  color: #67e8f9;
 }
 
 #root .btn-icon.edit:hover {
-  background: rgba(212, 175, 55, 0.12);
+  background-color: rgba(6, 182, 212, 0.12);
 }
 
 #root :is(.btn-icon.delete, .btn-accion.btn-eliminar, .btn-accion.btn-desactivar) {
-  color: #f87171;
-}
-
-#root .btn-icon.delete:hover {
-  background: rgba(220, 38, 38, 0.14);
-}
-
-#root :is(.btn-accion.btn-aprobar, .btn-accion.btn-reactivar) {
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #86efac;
-  background: rgba(34, 197, 94, 0.12);
-}
-
-#root :is(.btn-accion.btn-desactivar, .btn-accion.btn-eliminar) {
-  border-color: rgba(239, 68, 68, 0.35);
   color: #fca5a5;
-  background: rgba(220, 38, 38, 0.12);
+}
+
+#root .login-container {
+  background:
+    radial-gradient(ellipse at 12% 18%, rgba(6, 182, 212, 0.14), transparent 34%),
+    radial-gradient(ellipse at 88% 82%, rgba(6, 182, 212, 0.08), transparent 30%),
+    #0b1120;
+}
+
+#root .login-branding {
+  color: #e5e7eb;
+  background:
+    radial-gradient(ellipse at 90% 15%, rgba(6, 182, 212, 0.18), transparent 38%),
+    linear-gradient(145deg, #1f2937 0%, #111827 68%, #0b1220 100%);
+  border-color: var(--color-border);
+}
+
+#root .login-card {
+  background: #111827;
+}
+
+#root .login-header {
+  text-align: left;
+}
+
+#root .login-header h2 {
+  color: #f9fafb;
+}
+
+#root .login-header p,
+#root .branding-footer {
+  color: #9ca3af;
+}
+
+#root .branding-header h1 {
+  color: #f9fafb;
+}
+
+#root .branding-header p,
+#root .feature-item {
+  color: #d1d5db;
+}
+
+#root .input-icon,
+#root .toggle-auth button {
+  color: #06b6d4;
+}
+
+#root .toggle-auth button:hover {
+  color: #67e8f9;
+}
+
+#root .input-wrapper {
+  background: #131c2e;
+}
+
+#root .input-wrapper input {
+  background: transparent;
+}
+
+#root .dashboard-header {
+  border-left: 4px solid #06b6d4;
+}
+
+#root .dashboard-title,
+#root .card-value {
+  color: #f9fafb;
+}
+
+#root .dashboard-eyebrow {
+  color: #22d3ee;
+}
+
+#root .dashboard-finance-note {
+  border-left-color: #06b6d4;
+}
+
+#root ::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+#root ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border: 1px solid #374151;
+}
+
+#root ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+#root .dashboard-metric-section {
+  color: #f9fafb;
+  background-color: #111827;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#root .metric-card {
+  background-color: #111827;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+#root .metric-card:hover {
+  background-color: #111827;
+  border-color: rgba(255, 255, 255, 0.08);
+  border-left-color: #06b6d4;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+#root .metric-card:nth-child(3n) .card-icon.gold {
+  color: #06b6d4;
+  background-color: rgba(6, 182, 212, 0.12);
+}
+
+#root .metric-card:nth-child(3n):hover {
+  border-left-color: #06b6d4;
+}
+
+#root .btn-correo,
+#root .btn-accion.btn-reactivar {
+  color: #0b1120;
+  background-color: #06b6d4;
+  border-color: #06b6d4;
+}
+
+#root .btn-correo:hover,
+#root .btn-accion.btn-reactivar:hover {
+  color: #0b1120;
+  background-color: #0891b2;
+  border-color: #0891b2;
+}
+
+#root .btn-accion.btn-desactivar {
+  color: #f9fafb;
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+#root :is(.view-container, .dashboard-container, .comercial-container, .app-content) {
+  background-color: #0b1120;
+}
+
+#root :is(.form-card, .comercial-panel, .comercial-venta, .trazabilidad-card, .retrasos-panel, .retraso-orden, .retraso-historico, .retraso-form, .merma-lista, .modal-content, .modal-form, .table-container, .table-wrapper, .module-container, .tabla-container, .contenedor-vista, .dashboard-metric-section) {
+  background-color: #111827;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#root :is(.comercial-panel h3, .trazabilidad-card h3, .retrasos-panel h3, .retrasos-panel h4, .merma-lista h3, .badge-modulo, .badge-categoria, .view-header .badge-modulo) {
+  color: #06b6d4;
+}
+
+#root :is(input, select, textarea, .input-group input, .comercial-form-grid input, .comercial-form-grid select, .modal-form textarea, .modal-form select, .retraso-form textarea, .retraso-form select, .merma-form-grid input, .merma-form-grid select, .correo-recuperacion-form input) {
+  background-color: #131c2e;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+#root :is(input, select, textarea, .input-group input, .comercial-form-grid input, .comercial-form-grid select, .modal-form textarea, .modal-form select, .retraso-form textarea, .retraso-form select, .merma-form-grid input, .merma-form-grid select, .correo-recuperacion-form input):focus {
+  border-color: #06b6d4;
+}
+
+#root .dashboard-eyebrow,
+#root .dashboard-header {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+#root .app-sidebar .navigation-button:hover {
+  color: #ffffff;
+}
+
+#root .app-sidebar .navigation-button.active {
+  color: #22d3ee;
+}
+
+#root .logout-button {
+  color: #fca5a5;
+  background-color: rgba(239, 68, 68, 0.14);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+#root .logout-button:hover {
+  color: #ffffff;
+  background-color: rgba(239, 68, 68, 0.25);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+#root :is(.btn-primary, .btn-success, .btn-sies-primary, .btn-add-orden, .btn-add-ficha, .btn-add-auditoria, .dashboard-refresh, .comercial-action:not(.secundario), .retraso-button:not(.secundario), .btn-correo) {
+  color: #0b1120;
+  background-color: #06b6d4;
+  border-color: #06b6d4;
+  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.2);
+}
+
+#root :is(.btn-primary, .btn-success, .btn-sies-primary, .btn-add-orden, .btn-add-ficha, .btn-add-auditoria, .dashboard-refresh, .comercial-action:not(.secundario), .retraso-button:not(.secundario), .btn-correo):hover:not(:disabled) {
+  color: #0b1120;
+  background-color: #0891b2;
+  border-color: #0891b2;
+}
+
+#root :is(.btn-sies-secondary, .comercial-action.secundario, .retraso-button.secundario) {
+  color: #67e8f9;
+  background-color: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+#root .metric-card:nth-child(3n) {
+  border-left-color: #06b6d4;
+}
+
+#root .metric-card:nth-child(3n) .card-icon.gold {
+  color: #06b6d4;
+  background-color: rgba(6, 182, 212, 0.12);
 }
