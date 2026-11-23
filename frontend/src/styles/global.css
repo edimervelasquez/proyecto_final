@@ -54,6 +54,7 @@ textarea:focus {
   display: flex;
   align-items: stretch;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   padding-left: 260px;
   background: var(--color-bg);
@@ -164,6 +165,7 @@ textarea:focus {
   flex-direction: column;
   min-width: 0;
   min-height: 100vh;
+<<<<<<< HEAD
   color: var(--color-text);
   background: var(--color-bg);
 }
@@ -235,22 +237,154 @@ tr:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #d4af37;
+=======
+  min-height: 100dvh;
+  color: #e2e8f0;
+  background: #0b1120;
+>>>>>>> 53dd4de (reorganizacion y adaptabilidad funcional)
 }
 
 @media (max-width: 760px) {
   .app-shell {
+    flex-direction: column;
     padding-left: 0;
   }
 
   .app-sidebar {
-    position: relative;
-    top: auto;
-    left: auto;
-    z-index: auto;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem 1rem;
     width: 100%;
     height: auto;
     max-height: none;
     flex-basis: auto;
+    padding: 0.65rem 0.85rem;
     overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.22);
+  }
+
+  .app-sidebar > div {
+    display: contents;
+  }
+
+  .app-brand {
+    grid-column: 1;
+    margin: 0;
+    text-align: left;
+    font-size: clamp(1.05rem, 4vw, 1.3rem);
+  }
+
+  .user-card {
+    grid-column: 2;
+    align-items: flex-end;
+    max-width: 48vw;
+    margin: 0;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .user-card strong {
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .user-role {
+    padding: 0.1rem 0.35rem;
+    font-size: 0.62rem;
+  }
+
+  .app-navigation {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .navigation-button {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .app-sidebar .logout-button {
+    grid-column: 2;
+    width: auto;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .app-content {
+    min-height: 0;
+  }
+
+  .app-content > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  #root .view-container {
+    padding: 1rem;
+  }
+
+  #root .view-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  #root .grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #root :is(.form-card, .comercial-panel, .merma-lista, .trazabilidad-card, .table-container, .module-container, .tabla-container, .contenedor-vista) {
+    min-width: 0;
+    padding: 0.9rem;
+  }
+
+  #root :is(.table-container, .table-wrapper, .comercial-tabla-scroll, .trazabilidad-scroll, .merma-table-scroll) {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  #root :is(.table-container, .table-wrapper, .comercial-tabla-scroll, .trazabilidad-scroll, .merma-table-scroll) > table {
+    min-width: 600px;
+  }
+
+  #root :is(.produccion-header-actions, .calidad-header-actions, .ficha-header-actions) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #root :is(.produccion-header-actions, .calidad-header-actions, .ficha-header-actions) > button,
+  #root .form-actions-right > button {
+    width: 100%;
+  }
+
+  #root :is(.search-box, .correo-recuperacion-form) {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  #root :is(input, select, textarea) {
+    min-width: 0;
+    font-size: 16px;
   }
 }
