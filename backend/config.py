@@ -51,11 +51,18 @@ def initialize_environment(
     target_environment = os.environ if environment is None else environment
     _read_env_file(env_file, target_environment)
 
+    # Limpia saltos de línea o espacios ocultos en variables ya cargadas (ej. Render)
+    for k, v in list(target_environment.items()):
+        if isinstance(v, str):
+            cleaned = v.strip()
+            if cleaned != v:
+                target_environment[k] = cleaned
+
     missing = {}
     for key, factory in DEFAULT_ENVIRONMENT.items():
         if key not in target_environment:
             missing[key] = factory()
-        elif not target_environment[key]:
+        elif not target_environment[key].strip():
             default_value = factory()
             if default_value:
                 missing[key] = default_value
@@ -67,8 +74,9 @@ def initialize_environment(
             if env_file.stat().st_size:
                 file.write("\n")
             for key, value in missing.items():
-                file.write(f"{key}={value}\n")
-                target_environment[key] = value
+                clean_val = str(value).strip()
+                file.write(f"{key}={clean_val}\n")
+                target_environment[key] = clean_val
     except OSError as exc:
         raise RuntimeError(
             f"No se pudo crear o actualizar el archivo de configuración {env_file}."
@@ -79,10 +87,10 @@ initialize_environment()
 
 
 class Config:
-    SECRET_KEY = os.environ["SECRET_KEY"]
+    SECRET_KEY = os.environ["SECRET_KEY"].strip()
     APP_ENV = os.environ.get("APP_ENV", "production").strip().lower()
     try:
-        PASSWORD_MIN_LENGTH = int(os.environ.get("PASSWORD_MIN_LENGTH", "12"))
+        PASSWORD_MIN_LENGTH = int(os.environ.get("PASSWORD_MIN_LENGTH", "12").strip())
     except ValueError as exc:
         raise RuntimeError("PASSWORD_MIN_LENGTH debe ser un número entero.") from exc
     if not 4 <= PASSWORD_MIN_LENGTH <= 128:
@@ -91,11 +99,11 @@ class Config:
         raise RuntimeError(
             "PASSWORD_MIN_LENGTH no puede ser menor de 12 fuera de desarrollo."
         )
-    SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"]
+    SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"].strip()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    HOST = os.environ["HOST"]
+    HOST = os.environ["HOST"].strip()
     try:
-        PORT = int(os.environ["PORT"])
+        PORT = int(os.environ["PORT"].strip())
     except ValueError as exc:
         raise RuntimeError("PORT debe ser un número entero.") from exc
     if not 1 <= PORT <= 65535:
