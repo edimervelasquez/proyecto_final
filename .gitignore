@@ -44,3 +44,5 @@ frontend/dist/
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
+
+frontend/.tsupgrader/

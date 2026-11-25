@@ -53,7 +53,7 @@ const FormularioFicha = ({
         />
       </div>
 
-      <div className="grid-2">
+      <div className="grid-3 ficha-price-grid">
         <div className="input-group">
           <label>Costo de mano de obra por prenda ($) *</label>
           <input
@@ -78,24 +78,23 @@ const FormularioFicha = ({
             required
           />
         </div>
+        <div className="input-group">
+          <label>Precio al detal por prenda ($) *</label>
+          <input
+            type="number"
+            name="precio_detal"
+            min="0.01"
+            step="0.01"
+            value={formData.precio_detal}
+            onChange={onChange}
+            required
+          />
+        </div>
       </div>
 
-      <div className="input-group">
-        <label>Precio al detal por prenda ($) *</label>
-        <input
-          type="number"
-          name="precio_detal"
-          min="0.01"
-          step="0.01"
-          value={formData.precio_detal}
-          onChange={onChange}
-          required
-        />
-      </div>
-
-      <h4>Insumos por unidad</h4>
+      <h4 className="form-section-title">Insumos por unidad</h4>
       {formData.insumos.map((insumo, index) => (
-        <div className="grid-2" key={`insumo-${index}`}>
+        <div className="grid-2 ingredient-row" key={`insumo-${index}`}>
           <div className="input-group">
             <label>Materia prima *</label>
             <select
@@ -113,7 +112,7 @@ const FormularioFicha = ({
           </div>
           <div className="input-group">
             <label>Cantidad requerida por unidad *</label>
-            <div className="grid-2">
+            <div className="ingredient-quantity-control">
               <input
                 type="number"
                 min="0.01"

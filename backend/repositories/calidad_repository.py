@@ -1,7 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from backend.models.models import ControlCalidad, OrdenComercial, Produccion, Usuario
+from backend.models.models import ControlCalidad, Produccion, Usuario
 
 
 class CalidadRepository:
@@ -61,14 +61,14 @@ class CalidadRepository:
                 func.coalesce(
                     func.sum(
                         ControlCalidad.cantidad_defectuosa
-                        * OrdenComercial.costo_unitario_estimado
+                        * Produccion.costo_unitario_estimado
                     ),
                     0,
                 )
             )
             .join(
-                OrdenComercial,
-                OrdenComercial.id_produccion == ControlCalidad.id_produccion,
+                Produccion,
+                Produccion.id_produccion == ControlCalidad.id_produccion,
             )
             .scalar()
         )

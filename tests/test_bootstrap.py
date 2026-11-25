@@ -10,7 +10,15 @@ from sqlalchemy.orm import Session
 
 from backend.bootstrap import STANDARD_AREAS, STANDARD_ROLES, initialize_database
 from backend.config import initialize_environment
-from backend.models.models import Area, Rol
+from backend.database import Base
+from backend.models.models import (
+    Area,
+    IngresoInsumos,
+    Produccion,
+    ProductoComercial,
+    Rol,
+    Usuario,
+)
 
 
 class DatabaseBootstrapTests(unittest.TestCase):
@@ -68,41 +76,44 @@ class DatabaseBootstrapTests(unittest.TestCase):
             )).scalar_one()
         self.assertEqual(minimum, 0)
 
-    def test_bootstrap_extends_existing_diagram_tables_without_losing_rows(self):
-        with self.engine.begin() as connection:
-            connection.execute(text(
-                "CREATE TABLE usuario ("
-                "id_usuario INTEGER PRIMARY KEY, "
-                "nombre VARCHAR(100) NOT NULL, "
-                "correo VARCHAR(100) NOT NULL, "
-                "password VARCHAR(255) NOT NULL, "
-                "id_rol INTEGER NOT NULL)"
+    def test_bootstrap_uses_current_schema_and_only_declares_expected_tables(self):
+        Base.metadata.create_all(self.engine)
+        with Session(self.engine) as db:
+            role = Rol(id_rol=2, nombre_rol="TRABAJADOR")
+            user = Usuario(
+                id_usuario=7,
+                empleado="Operaria",
+                correo="operaria@example.test",
+                contrasenia="hash",
+                id_rol=2,
+            )
+            area = Area(nombre_area="Corte")
+            product = ProductoComercial(
+                sku_prenda="BOOTSTRAP-TEST",
+                nombre_producto="Producto existente",
+                costo_mano_obra=0,
+                precio_mayorista=10,
+                precio_detal=15,
+            )
+            db.add_all((role, user, area, product))
+            db.flush()
+            ingreso = IngresoInsumos(
+                id_materia_prima=1,
+                cantidad_materia_prima=8,
+            )
+            db.add(ingreso)
+            db.flush()
+            db.add(Produccion(
+                id_produccion=9,
+                sku_prenda=product.sku_prenda,
+                canal_destino="DETAL",
+                costo_unitario_estimado=12.50,
+                cantidad_recibida=25,
+                id_area=area.id_area,
+                id_ingreso_insumos=ingreso.id_entrante,
+                estado_general="EN_PROCESO",
             ))
-            connection.execute(text(
-                "INSERT INTO usuario "
-                "(id_usuario, nombre, correo, password, id_rol) "
-                "VALUES (7, 'Operaria', 'operaria@example.test', 'hash', 2)"
-            ))
-            connection.execute(text(
-                "CREATE TABLE modelo ("
-                "id_modelo INTEGER PRIMARY KEY, "
-                "nombre_modelo VARCHAR(100) NOT NULL, descripcion TEXT)"
-            ))
-            connection.execute(text(
-                "INSERT INTO modelo (id_modelo, nombre_modelo) "
-                "VALUES (4, 'Modelo existente')"
-            ))
-            connection.execute(text(
-                "CREATE TABLE produccion ("
-                "id_produccion INTEGER PRIMARY KEY, "
-                "id_modelo INTEGER NOT NULL, cantidad INTEGER NOT NULL, "
-                "fecha_inicio DATETIME, estado_general VARCHAR(50))"
-            ))
-            connection.execute(text(
-                "INSERT INTO produccion "
-                "(id_produccion, id_modelo, cantidad, estado_general) "
-                "VALUES (9, 4, 25, 'EN_PROCESO')"
-            ))
+            db.commit()
 
         initialize_database(self.engine)
 
@@ -112,15 +123,44 @@ class DatabaseBootstrapTests(unittest.TestCase):
                 "FROM usuario WHERE id_usuario = 7"
             )).one()
             order = connection.execute(text(
-                "SELECT id_modelo, cantidad, id_area, id_ingreso_insumos, "
-                "cantidad_entregada FROM produccion WHERE id_produccion = 9"
+                "SELECT sku_prenda, canal_destino, costo_unitario_estimado, "
+                "cantidad, id_area, id_ingreso_insumos, cantidad_entregada "
+                "FROM produccion WHERE id_produccion = 9"
             )).one()
+        table_names = set(inspect(self.engine).get_table_names())
 
         self.assertEqual(
             user,
             ("Operaria", "operaria@example.test", "hash", "ACTIVO"),
         )
-        self.assertEqual(order, (4, 25, None, None, 0))
+        self.assertEqual(
+            order,
+            ("BOOTSTRAP-TEST", "DETAL", 12.5, 25, 1, 1, 0),
+        )
+        self.assertEqual(
+            table_names,
+            {
+                "area",
+                "control_calidad",
+                "detalle_venta",
+                "etapa_produccion",
+                "ficha_tecnica_insumo",
+                "ingreso_insumos",
+                "inventario_prenda",
+                "materia_prima",
+                "merma",
+                "movimiento_insumo",
+                "movimiento_prenda",
+                "produccion",
+                "producto_comercial",
+                "retraso_produccion",
+                "rol",
+                "tipo_merma",
+                "trazabilidad",
+                "usuario",
+                "venta",
+            },
+        )
 
     def test_bootstrap_adds_process_fields_to_legacy_production_stages(self):
         with self.engine.begin() as connection:

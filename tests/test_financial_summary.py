@@ -12,9 +12,8 @@ from backend.models.models import (
     DetalleVenta,
     IngresoInsumos,
     MateriaPrima,
-    Modelo,
-    OrdenComercial,
     Produccion,
+    ProductoComercial,
     Rol,
     Usuario,
     Venta,
@@ -54,7 +53,7 @@ class FinancialSummaryTests(unittest.TestCase):
         self.db.add_all((user, material, area))
         self.db.flush()
         ingreso = IngresoInsumos(
-            id_materiaPrima=material.id_materiaPrima,
+            id_materia_prima=material.id_materia_prima,
             cantidad_materia_prima=10,
             proveedor="Prueba",
             costo_unitario=Decimal("5.00"),
@@ -62,11 +61,26 @@ class FinancialSummaryTests(unittest.TestCase):
         )
         self.db.add(ingreso)
         self.db.flush()
-        modelo = Modelo(nombre_modelo="Modelo de prueba")
-        self.db.add(modelo)
+        product = ProductoComercial(
+            sku_prenda="TEST-SKU",
+            nombre_producto="Producto de prueba",
+            costo_mano_obra=Decimal("2.50"),
+            precio_mayorista=Decimal("20.00"),
+            precio_detal=Decimal("50.00"),
+        )
+        second_product = ProductoComercial(
+            sku_prenda="TEST-SKU-2",
+            nombre_producto="Segundo producto",
+            costo_mano_obra=Decimal("2.50"),
+            precio_mayorista=Decimal("20.00"),
+            precio_detal=Decimal("50.00"),
+        )
+        self.db.add_all((product, second_product))
         self.db.flush()
         order = Produccion(
-            id_modelo=modelo.id_modelo,
+            sku_prenda=product.sku_prenda,
+            canal_destino="DETAL",
+            costo_unitario_estimado=Decimal("12.50"),
             id_area=area.id_area,
             id_ingreso_insumos=ingreso.id_entrante,
             fecha_recibido=date.today(),
@@ -76,12 +90,6 @@ class FinancialSummaryTests(unittest.TestCase):
         )
         self.db.add(order)
         self.db.flush()
-        self.db.add(OrdenComercial(
-            id_produccion=order.id_produccion,
-            sku_prenda="TEST-SKU",
-            canal_destino="DETAL",
-            costo_unitario_estimado=Decimal("12.50"),
-        ))
         self.db.add(ControlCalidad(
             id_produccion=order.id_produccion,
             id_usuario=user.id_usuario,

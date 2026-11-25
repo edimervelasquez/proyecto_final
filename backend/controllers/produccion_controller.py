@@ -5,11 +5,9 @@ from backend.schemas.produccion_schema import (
     ProcesoProduccionCreate,
     OrdenProduccionCreate,
     RetrasoProduccionCreate,
-    TrazoProduccionCreate,
 )
 from backend.services.produccion_service import ProduccionService
 from backend.services.retraso_service import RetrasoService
-from backend.services.trazo_service import TrazoService
 
 
 class ProduccionController:
@@ -21,18 +19,6 @@ class ProduccionController:
         id_usuario: int,
     ):
         return ProduccionService.registrar_orden(data, db, id_usuario)
-
-    @staticmethod
-    def registrar_trazo(
-        data: TrazoProduccionCreate,
-        db: Session,
-        id_usuario: int,
-    ):
-        return TrazoService.registrar_trazo(data, db, id_usuario)
-
-    @staticmethod
-    def listar_trazos(db: Session):
-        return TrazoService.listar_trazos(db)
 
     @staticmethod
     def actividad_reciente(db: Session):

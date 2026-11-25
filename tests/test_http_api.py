@@ -17,12 +17,8 @@ from backend.models.models import (
     IngresoInsumos,
     FichaTecnicaInsumo,
     InventarioPrenda,
-    MateriaPrima,
-    Modelo,
     MovimientoPrenda,
-    OrdenComercial,
     Produccion,
-    TrazoProduccion,
 )
 from backend.security import create_access_token, get_secret_key
 
@@ -72,7 +68,7 @@ class HttpApiTests(unittest.TestCase):
                 estado="ACTIVO",
             )
             material = MateriaPrima(
-                id_materiaPrima=1,
+                id_materia_prima=1,
                 nombre_material="Tela HTTP",
                 Cantidad_materiaPrima=2,
                 stock_minimo=0,
@@ -141,6 +137,8 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201, response.text)
         self.assertEqual(response.json()["nombre_material"], "Tela creada desde Swagger")
         self.assertEqual(response.json()["nuevo_stock"], 5)
+        self.assertIn("id_materiaPrima", response.json())
+        self.assertNotIn("id_materia_prima", response.json())
 
         with Session(self.engine) as db:
             material = db.query(MateriaPrima).filter_by(
@@ -150,7 +148,29 @@ class HttpApiTests(unittest.TestCase):
                 id_entrante=response.json()["id_ingreso"]
             ).one()
             self.assertEqual(material.Cantidad_materiaPrima, 5)
-            self.assertEqual(ingreso.id_materiaPrima, material.id_materiaPrima)
+            self.assertEqual(
+                ingreso.id_materia_prima,
+                material.id_materia_prima,
+            )
+            material_id = material.id_materia_prima
+
+        ficha = self.client.post(
+            "/api/insumos/ficha-tecnica",
+            headers=self.headers("ADMINISTRADOR"),
+            json={
+                "sku_prenda": "HTTP-FICHA-001",
+                "nombre_producto": "Ficha HTTP",
+                "insumos": [{
+                    "id_materiaPrima": material_id,
+                    "cantidad_estimada": 1,
+                }],
+                "precio_mayorista": 12000,
+                "precio_detal": 20000,
+            },
+        )
+        self.assertEqual(ficha.status_code, 201, ficha.text)
+        self.assertIn("id_materiaPrima", ficha.json()["detalles"][0])
+        self.assertNotIn("id_materia_prima", ficha.json()["detalles"][0])
 
     def test_seller_cannot_access_dashboard_but_can_list_products(self):
         dashboard = self.client.get(
@@ -227,12 +247,9 @@ class HttpApiTests(unittest.TestCase):
         self.assertTrue(
             openapi["paths"]["/api/produccion/areas"]["get"]["security"]
         )
-        self.assertIn("/api/produccion/trazos", openapi["paths"])
-        self.assertTrue(
-            openapi["paths"]["/api/produccion/trazos"]["post"]["security"]
-        )
+        self.assertNotIn("/api/produccion/trazos", openapi["paths"])
         order_schema = openapi["components"]["schemas"]["OrdenProduccionCreate"]
-        self.assertIn("id_trazos", order_schema["properties"])
+        self.assertNotIn("id_trazos", order_schema["properties"])
 
         unauthorized = self.client.post("/api/pedidos", json={})
         self.assertEqual(unauthorized.status_code, 401)
@@ -274,7 +291,7 @@ class HttpApiTests(unittest.TestCase):
                 nombre_area="Calidad y Empaque"
             ).one()
             ingreso = IngresoInsumos(
-                id_materiaPrima=1,
+                id_materia_prima=1,
                 cantidad_materia_prima=1,
                 proveedor="Prueba de pedido",
                 costo_unitario=Decimal("2.00"),
@@ -282,11 +299,10 @@ class HttpApiTests(unittest.TestCase):
             )
             db.add(ingreso)
             db.flush()
-            modelo = Modelo(nombre_modelo="Modelo de pedido")
-            db.add(modelo)
-            db.flush()
             order = Produccion(
-                id_modelo=modelo.id_modelo,
+                sku_prenda="HTTP-TEST-001",
+                canal_destino="DETAL",
+                costo_unitario_estimado=Decimal("2000.00"),
                 id_area=area.id_area,
                 id_ingreso_insumos=ingreso.id_entrante,
                 fecha_recibido=date.today(),
@@ -297,12 +313,6 @@ class HttpApiTests(unittest.TestCase):
             db.add(order)
             db.flush()
             db.add_all((
-                OrdenComercial(
-                    id_produccion=order.id_produccion,
-                    sku_prenda="HTTP-TEST-001",
-                    canal_destino="DETAL",
-                    costo_unitario_estimado=Decimal("2000.00"),
-                ),
                 InventarioPrenda(
                     sku_prenda="HTTP-TEST-001",
                     ubicacion="LOCAL",
@@ -355,55 +365,12 @@ class HttpApiTests(unittest.TestCase):
             ).one()
             self.assertEqual(stock.cantidad, 1)
 
-    def test_swagger_trace_endpoint_persists_material_receipt_and_product_link(self):
-        with Session(self.engine) as db:
-            ingreso = IngresoInsumos(
-                id_materiaPrima=1,
-                cantidad_materia_prima=10,
-                proveedor="Ingreso trazable",
-                costo_unitario=Decimal("5.00"),
-                fecha_ingreso=date.today(),
-            )
-            db.add(ingreso)
-            db.flush()
-            db.add(FichaTecnicaInsumo(
-                sku_prenda="HTTP-TEST-001",
-                id_materiaPrima=1,
-                cantidad_estimada=Decimal("0.50"),
-            ))
-            db.commit()
-            ingreso_id = ingreso.id_entrante
-
-        created = self.client.post(
-            "/api/produccion/trazos",
-            headers=self.headers("TRABAJADOR"),
-            json={
-                "id_ingreso": ingreso_id,
-                "sku_prenda": "HTTP-TEST-001",
-                "cantidad_materia_prima": "1.00",
-                "cantidad_prendas": 2,
-                "observaciones": "Trazado de prueba",
-            },
-        )
-        self.assertEqual(created.status_code, 201, created.text)
-        self.assertEqual(created.json()["id_ingreso"], ingreso_id)
-        self.assertEqual(created.json()["id_materiaPrima"], 1)
-        self.assertEqual(created.json()["sku_prenda"], "HTTP-TEST-001")
-        self.assertIsNone(created.json()["id_produccion"])
-
-        listed = self.client.get(
+    def test_deleted_trace_endpoint_is_not_registered(self):
+        response = self.client.get(
             "/api/produccion/trazos",
             headers=self.headers("TRABAJADOR"),
         )
-        self.assertEqual(listed.status_code, 200)
-        self.assertEqual(listed.json()[0]["id_trazo"], created.json()["id_trazo"])
-
-        with Session(self.engine) as db:
-            stored = db.query(TrazoProduccion).filter_by(
-                id_trazo=created.json()["id_trazo"]
-            ).one()
-            self.assertEqual(stored.id_ingreso, ingreso_id)
-            self.assertEqual(stored.cantidad_prendas, 2)
+        self.assertEqual(response.status_code, 404)
 
     def test_admin_can_set_material_minimum_and_read_low_stock_alerts(self):
         update = self.client.put(

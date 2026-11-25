@@ -8,6 +8,14 @@ const fechaLegible = (fecha) => {
     : parsed.toLocaleString('es-CO');
 };
 
+const estadoClase = (estado) => {
+  const valor = (estado || '').toLowerCase();
+  if (/(aprob|finaliz|complet|exitos|activo|entrada)/.test(valor)) return 'success';
+  if (/(inactiv|rechaz|error|elimin)/.test(valor)) return 'danger';
+  if (/(retras|pendient|bajo|alert|pausa)/.test(valor)) return 'warning';
+  return 'progress';
+};
+
 export default function TrazabilidadTable({
   titulo,
   registros,
@@ -44,7 +52,11 @@ export default function TrazabilidadTable({
                   <td>{registro.registrado_por || 'No registrado'}</td>
                   <td>{fechaLegible(registro.fecha_registro)}</td>
                   <td>{registro.proceso || 'Sin registrar'}</td>
-                  <td>{registro.estado || 'Sin registrar'}</td>
+                  <td>
+                    <span className={`status-badge ${estadoClase(registro.estado)}`}>
+                      {registro.estado || 'Sin registrar'}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class IngresoInsumoCreate(BaseModel):
     model_config = ConfigDict(
+        populate_by_name=True,
         json_schema_extra={
             "examples": [
                 {
@@ -30,8 +31,9 @@ class IngresoInsumoCreate(BaseModel):
         }
     )
 
-    id_materiaPrima: Optional[int] = Field(
+    id_materia_prima: Optional[int] = Field(
         default=None,
+        alias="id_materiaPrima",
         description=(
             "Para crear una materia prima nueva, deja este valor en null. "
             "Para un material existente, indica su ID y deja nombre_material "
@@ -56,9 +58,11 @@ class IngresoInsumoCreate(BaseModel):
 
 
 class IngresoInsumoResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     mensaje: str
     id_ingreso: int
-    id_materiaPrima: int
+    id_materia_prima: int = Field(alias="id_materiaPrima")
     nombre_material: str
     nuevo_stock: float
 
@@ -67,8 +71,10 @@ class StockMinimoUpdate(BaseModel):
     stock_minimo: int = Field(..., ge=0)
 
 class DetalleInsumoFicha(BaseModel):
-    id_materiaPrima: int
+    id_materia_prima: int = Field(alias="id_materiaPrima")
     cantidad_estimada: float = Field(..., gt=0)
+
+    model_config = ConfigDict(populate_by_name=True)
 
 class FichaTecnicaCreate(BaseModel):
     sku_prenda: str = Field(..., min_length=1, max_length=50)
@@ -81,10 +87,12 @@ class FichaTecnicaCreate(BaseModel):
 
 
 class FichaTecnicaDetalleResponse(BaseModel):
-    id_materiaPrima: int
+    id_materia_prima: int = Field(alias="id_materiaPrima")
     nombre_material: str
     cantidad: float
     costo_estimado: float
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class FichaTecnicaResponse(BaseModel):

@@ -8,10 +8,9 @@ from backend.models.models import (
     FichaTecnicaInsumo,
     IngresoInsumos,
     MateriaPrima,
-    Modelo,
     Produccion,
+    ProductoComercial,
     RetrasoProduccion,
-    TrazoProduccion,
     Usuario,
 )
 
@@ -31,7 +30,7 @@ class ProduccionRepository:
         db: Session, id_materia_prima: int, lock: bool = False
     ):
         query = db.query(MateriaPrima).filter(
-            MateriaPrima.id_materiaPrima == id_materia_prima
+            MateriaPrima.id_materia_prima == id_materia_prima
         )
         return query.with_for_update().first() if lock else query.first()
 
@@ -40,19 +39,6 @@ class ProduccionRepository:
         orden = Produccion(**orden_data)
         db.add(orden)
         return orden
-
-    @staticmethod
-    def obtener_o_crear_modelo(db: Session, nombre: str, descripcion: str | None):
-        modelo = (
-            db.query(Modelo)
-            .filter(func.lower(Modelo.nombre_modelo) == nombre.lower())
-            .first()
-        )
-        if modelo is None:
-            modelo = Modelo(nombre_modelo=nombre, descripcion=descripcion)
-            db.add(modelo)
-            db.flush()
-        return modelo
 
     @staticmethod
     def obtener_ultimo_ingreso(db: Session):
@@ -68,70 +54,6 @@ class ProduccionRepository:
             IngresoInsumos.id_entrante == id_ingreso
         )
         return query.with_for_update().first() if lock else query.first()
-
-    @staticmethod
-    def obtener_trazo(db: Session, id_trazo: int, lock: bool = False):
-        query = db.query(TrazoProduccion).filter(
-            TrazoProduccion.id_trazo == id_trazo
-        )
-        return query.with_for_update().first() if lock else query.first()
-
-    @staticmethod
-    def obtener_trazos_por_ids(db: Session, ids_trazos: list[int], lock: bool = False):
-        query = db.query(TrazoProduccion).filter(
-            TrazoProduccion.id_trazo.in_(ids_trazos)
-        )
-        return query.with_for_update().all() if lock else query.all()
-
-    @staticmethod
-    def registrar_trazo(db: Session, data: dict):
-        trazo = TrazoProduccion(**data)
-        db.add(trazo)
-        return trazo
-
-    @staticmethod
-    def trazos_por_ingreso(db: Session, id_ingreso: int):
-        return (
-            db.query(TrazoProduccion)
-            .filter(TrazoProduccion.id_ingreso == id_ingreso)
-            .all()
-        )
-
-    @staticmethod
-    def trazos_pendientes_por_material(db: Session, id_materia_prima: int):
-        return (
-            db.query(TrazoProduccion)
-            .join(
-                IngresoInsumos,
-                IngresoInsumos.id_entrante == TrazoProduccion.id_ingreso,
-            )
-            .filter(
-                IngresoInsumos.id_materiaPrima == id_materia_prima,
-                TrazoProduccion.id_produccion.is_(None),
-            )
-            .all()
-        )
-
-    @staticmethod
-    def listar_trazos(db: Session, limite: int = 100):
-        return (
-            db.query(
-                TrazoProduccion,
-                IngresoInsumos.id_materiaPrima,
-                MateriaPrima.nombre_material,
-            )
-            .join(
-                IngresoInsumos,
-                IngresoInsumos.id_entrante == TrazoProduccion.id_ingreso,
-            )
-            .join(
-                MateriaPrima,
-                MateriaPrima.id_materiaPrima == IngresoInsumos.id_materiaPrima,
-            )
-            .order_by(TrazoProduccion.id_trazo.desc())
-            .limit(limite)
-            .all()
-        )
 
     @staticmethod
     def obtener_area(db: Session, id_area: int):
@@ -158,7 +80,11 @@ class ProduccionRepository:
     @staticmethod
     def obtener_ordenes(db: Session, limite: int = 100):
         return (
-            db.query(Produccion)
+            db.query(Produccion, ProductoComercial.nombre_producto)
+            .join(
+                ProductoComercial,
+                ProductoComercial.sku_prenda == Produccion.sku_prenda,
+            )
             .order_by(Produccion.id_produccion.desc())
             .limit(limite)
             .all()

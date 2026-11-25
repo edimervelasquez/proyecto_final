@@ -161,14 +161,13 @@ class ComercialService:
     ):
         if cantidad <= 0:
             return
-        destino = ComercialRepository.orden_comercial(db, id_produccion)
-        if not destino:
+        orden = ComercialRepository.orden(db, id_produccion, lock=True)
+        if not orden:
             raise HTTPException(
                 status_code=409,
                 detail="La orden no tiene configurado el producto y canal de destino.",
             )
-        orden = ComercialRepository.orden(db, id_produccion, lock=True)
-        if not orden or orden.id_area is None:
+        if orden.id_area is None:
             raise HTTPException(status_code=404, detail="Orden de producción no encontrada.")
         area = ComercialRepository.area(db, orden.id_area)
         if not area or area.nombre_area != "Calidad y Empaque":
@@ -178,14 +177,14 @@ class ComercialService:
             )
         ubicacion = (
             "BODEGA_MAYORISTA"
-            if destino.canal_destino == "MAYORISTA"
+            if orden.canal_destino == "MAYORISTA"
             else "BODEGA_LOCAL"
         )
-        stock = ComercialService._obtener_stock(db, destino.sku_prenda, ubicacion)
+        stock = ComercialService._obtener_stock(db, orden.sku_prenda, ubicacion)
         stock.costo_promedio = (
             (
                 Decimal(stock.cantidad) * Decimal(stock.costo_promedio)
-                + Decimal(cantidad) * Decimal(destino.costo_unitario_estimado)
+                + Decimal(cantidad) * Decimal(orden.costo_unitario_estimado)
             )
             / Decimal(stock.cantidad + cantidad)
             if stock.cantidad + cantidad
@@ -194,11 +193,11 @@ class ComercialService:
         stock.cantidad += cantidad
         ComercialService._registrar_movimiento(
             db,
-            sku=destino.sku_prenda,
+            sku=orden.sku_prenda,
             ubicacion=ubicacion,
             tipo="PRODUCCION_APROBADA",
             cantidad=cantidad,
-            costo=Decimal(destino.costo_unitario_estimado),
+            costo=Decimal(orden.costo_unitario_estimado),
             id_usuario=id_usuario,
             referencia=f"OP-{id_produccion}",
             id_produccion=id_produccion,
@@ -272,7 +271,7 @@ class ComercialService:
                     detail=f"Existencia insuficiente en origen: hay {disponible}.",
                 )
             if data.id_produccion is not None:
-                lote = ComercialRepository.orden_comercial(
+                lote = ComercialRepository.orden(
                     db, data.id_produccion
                 )
                 if not lote:
@@ -399,7 +398,7 @@ class ComercialService:
                 )
                 disponible = stock.cantidad if stock else 0
                 if id_produccion is not None:
-                    lote = ComercialRepository.orden_comercial(
+                    lote = ComercialRepository.orden(
                         db, id_produccion
                     )
                     if not lote:

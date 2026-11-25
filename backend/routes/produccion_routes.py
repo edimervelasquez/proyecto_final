@@ -12,8 +12,6 @@ from backend.schemas.produccion_schema import (
     OrdenProduccionCreate,
     OrdenProduccionResponse,
     RetrasoProduccionCreate,
-    TrazoProduccionCreate,
-    TrazoProduccionResponse,
 )
 
 router = APIRouter(
@@ -21,28 +19,6 @@ router = APIRouter(
     tags=["Producción"],
     dependencies=[Depends(get_current_user)],
 )
-
-@router.post(
-    "/trazos",
-    status_code=status.HTTP_201_CREATED,
-    response_model=TrazoProduccionResponse,
-)
-def registrar_trazo(
-    data: TrazoProduccionCreate,
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    id_usuario = int(request.state.token_payload["sub"])
-    return ProduccionController.registrar_trazo(data, db, id_usuario)
-
-
-@router.get(
-    "/trazos",
-    response_model=list[TrazoProduccionResponse],
-)
-def listar_trazos(db: Session = Depends(get_db)):
-    return ProduccionController.listar_trazos(db)
-
 
 @router.post(
     "/ordenes",

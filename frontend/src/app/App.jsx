@@ -14,6 +14,7 @@ import Produccion from '../pages/production/Produccion';
 import '../styles/variable.css';
 import '../styles/global.css';
 import '../styles/theme.css';
+import '../styles/responsive.css';
 
 const normalizeUser = (data) => {
   const user = data.usuario || data;

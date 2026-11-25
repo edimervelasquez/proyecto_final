@@ -6,7 +6,6 @@ from backend.models.models import (
     DetalleVenta,
     InventarioPrenda,
     MovimientoPrenda,
-    OrdenComercial,
     ProductoComercial,
     Produccion,
     Usuario,
@@ -162,18 +161,6 @@ class ComercialRepository:
             )
         ).scalar()
         return total, mayorista, detal, costo or 0
-
-    @staticmethod
-    def orden_comercial(db: Session, id_produccion: int):
-        return db.query(OrdenComercial).filter(
-            OrdenComercial.id_produccion == id_produccion
-        ).first()
-
-    @staticmethod
-    def guardar_orden_comercial(db: Session, data: dict):
-        registro = OrdenComercial(**data)
-        db.add(registro)
-        return registro
 
     @staticmethod
     def orden(db: Session, id_produccion: int, lock: bool = False):

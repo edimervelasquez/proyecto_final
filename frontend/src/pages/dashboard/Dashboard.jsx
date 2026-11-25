@@ -90,8 +90,8 @@ export default function Dashboard() {
       titulo: 'Inventario',
       metricas: [
         { titulo: 'Referencias de insumos', valor: resumen.insumos_catalogo, icono: <Package size={22} /> },
-        { titulo: 'Insumos bajo mínimo', valor: resumen.insumos_bajo_minimo, icono: <Package size={22} /> },
-        { titulo: 'Unidades en inventario', valor: resumen.unidades_inventario, icono: <ClipboardList size={22} /> },
+        { titulo: 'Insumos bajo mínimo', valor: resumen.insumos_bajo_minimo, icono: <Package size={22} />, alerta: true },
+        { titulo: 'Unidades de insumos', valor: resumen.unidades_inventario, icono: <ClipboardList size={22} /> },
         { titulo: 'Ingresos de insumos', valor: resumen.ingresos_registrados, icono: <Package size={22} /> },
         { titulo: 'Valor registrado de insumos', valor: formatoCOP(resumen.valor_insumos_recibidos), icono: <DollarSign size={22} /> },
       ],
@@ -108,7 +108,7 @@ export default function Dashboard() {
       metricas: [
         { titulo: 'Órdenes activas', valor: resumen.ordenes_activas, icono: <Scissors size={22} /> },
         { titulo: 'Operarios activos', valor: resumen.operarios_activos, icono: <Users size={22} /> },
-        { titulo: 'Retrasos abiertos', valor: resumen.retrasos_abiertos, icono: <ClipboardList size={22} /> },
+        { titulo: 'Retrasos abiertos', valor: resumen.retrasos_abiertos, icono: <ClipboardList size={22} />, alerta: true },
         {
           titulo: 'Tiempo perdido por retrasos',
           valor: `${Math.floor(resumen.tiempo_perdido_minutos / 60)} h ${resumen.tiempo_perdido_minutos % 60} min`,
@@ -162,7 +162,10 @@ export default function Dashboard() {
                 </h2>
                 <div className="metrics-grid">
                   {grupo.metricas.map((metrica) => (
-                    <article className="metric-card" key={metrica.titulo}>
+                    <article
+                      className={`metric-card ${metrica.alerta && Number(metrica.valor) > 0 ? 'has-alert' : ''}`}
+                      key={metrica.titulo}
+                    >
                       <div className="card-icon gold">{metrica.icono}</div>
                       <div className="card-info">
                         <span className="card-title">{metrica.titulo}</span>
@@ -175,7 +178,10 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <section className="dashboard-stock-alerts" aria-labelledby="stock-alerts-title">
+          <section
+            className={`dashboard-stock-alerts ${(resumen.alertas_insumos || []).length ? 'has-alerts' : 'no-alerts'}`}
+            aria-labelledby="stock-alerts-title"
+          >
             <h2 id="stock-alerts-title">Alertas de materia prima</h2>
             {(resumen.alertas_insumos || []).length === 0
               ? <p>No hay insumos en el mínimo o por debajo de este.</p>

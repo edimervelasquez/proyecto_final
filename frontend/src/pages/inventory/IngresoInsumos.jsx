@@ -198,8 +198,11 @@ const IngresoInsumos = ({ user }) => {
             <h3>Configurar mínimos por insumo</h3>
             <p>Solo administradores pueden editar los niveles que disparan las alertas.</p>
           </div>
-          <div className="stock-minimum-list">
-            {catalogo.map((material) => (
+          {catalogo.length === 0 ? (
+            <p className="trazabilidad-info">Aún no hay registros.</p>
+          ) : (
+            <div className="stock-minimum-list">
+              {catalogo.map((material) => (
               <form
                 className="stock-minimum-row"
                 key={material.id_materiaPrima}
@@ -227,8 +230,9 @@ const IngresoInsumos = ({ user }) => {
                   Guardar
                 </button>
               </form>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

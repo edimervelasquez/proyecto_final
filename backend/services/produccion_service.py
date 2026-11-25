@@ -11,7 +11,6 @@ from backend.repositories.comercial_repository import ComercialRepository
 from backend.repositories.insumos_repository import InsumosRepository
 from backend.models.models import EtapaProduccion
 from backend.services.permisos_operativos import validar_usuario_operativo
-from backend.services.trazo_service import TrazoService
 
 
 class ProduccionService:
@@ -56,16 +55,12 @@ class ProduccionService:
 
         cantidades_requeridas = {}
         for item in insumos_receta:
-            cantidades_requeridas[item.id_materiaPrima] = (
-                cantidades_requeridas.get(item.id_materiaPrima, 0)
+            cantidades_requeridas[item.id_materia_prima] = (
+                cantidades_requeridas.get(item.id_materia_prima, 0)
                 + float(item.cantidad_estimada) * data.cantidad_a_producir
             )
 
-        trazos, ingreso_referencia = ProduccionService._validar_trazos_orden(
-            data,
-            insumos_receta,
-            db,
-        )
+        ingreso_referencia = ProduccionRepository.obtener_ultimo_ingreso(db)
         materiales = []
         costo_unitario_estimado = float(producto.costo_mano_obra or 0)
         for id_materia_prima, cantidad_requerida in cantidades_requeridas.items():
@@ -80,22 +75,8 @@ class ProduccionService:
                         "por la ficha técnica no existe en el catálogo."
                     ),
                 )
-            trazos_pendientes = (
-                ProduccionRepository.trazos_pendientes_por_material(
-                    db, id_materia_prima
-                )
-            )
-            cantidad_reservada_otros = sum(
-                (
-                    Decimal(trazo.cantidad_materia_prima)
-                    for trazo in trazos_pendientes
-                    if trazo.id_trazo not in (data.id_trazos or [])
-                ),
-                Decimal("0"),
-            )
-            cantidad_disponible = (
-                Decimal(str(material.Cantidad_materiaPrima or 0))
-                - cantidad_reservada_otros
+            cantidad_disponible = Decimal(
+                str(material.Cantidad_materiaPrima or 0)
             )
             if cantidad_disponible < Decimal(str(cantidad_requerida)):
                 raise HTTPException(
@@ -103,8 +84,7 @@ class ProduccionService:
                     detail=(
                         "Falta material para la orden. El insumo "
                         f"'{material.nombre_material}' tiene {cantidad_disponible} "
-                        "unidades disponibles después de respetar los trazos "
-                        "pendientes, pero requieres "
+                        "unidades disponibles, pero requieres "
                         f"{cantidad_requerida} para este lote."
                     ),
                 )
@@ -127,11 +107,6 @@ class ProduccionService:
             )
 
         try:
-            modelo = ProduccionRepository.obtener_o_crear_modelo(
-                db,
-                producto.nombre_producto,
-                producto.descripcion,
-            )
             for material, cantidad_requerida in materiales:
                 material.Cantidad_materiaPrima = (
                     float(material.Cantidad_materiaPrima) - cantidad_requerida
@@ -140,7 +115,9 @@ class ProduccionService:
             nueva_orden = ProduccionRepository.registrar_orden(
                 db,
                 {
-                    "id_modelo": modelo.id_modelo,
+                    "sku_prenda": producto.sku_prenda,
+                    "canal_destino": data.canal_destino,
+                    "costo_unitario_estimado": costo_unitario_estimado,
                     "id_area": data.id_area,
                     "id_ingreso_insumos": ingreso_referencia.id_entrante,
                     "fecha_recibido": date.today(),
@@ -153,22 +130,16 @@ class ProduccionService:
             db.flush()
             for material, cantidad_requerida in materiales:
                 InsumosRepository.registrar_movimiento(db, {
-                    "id_materiaPrima": material.id_materiaPrima,
+                    "id_materia_prima": material.id_materia_prima,
                     "tipo_movimiento": "CONSUMO_PRODUCCION",
                     "cantidad": -cantidad_requerida,
                     "costo_unitario": InsumosRepository.obtener_costo_unitario_actual(
-                        db, material.id_materiaPrima
+                        db, material.id_materia_prima
                     ),
                     "referencia": f"OP-{nueva_orden.id_produccion}",
                     "id_produccion": nueva_orden.id_produccion,
                     "id_usuario": id_usuario,
                 })
-            ComercialRepository.guardar_orden_comercial(db, {
-                "id_produccion": nueva_orden.id_produccion,
-                "sku_prenda": data.sku_prenda,
-                "canal_destino": data.canal_destino,
-                "costo_unitario_estimado": costo_unitario_estimado,
-            })
             TrazabilidadRepository.registrar(
                 db,
                 "orden_produccion",
@@ -187,8 +158,6 @@ class ProduccionService:
                 estado="EN_PROCESO",
                 observaciones=data.observaciones,
             ))
-            for trazo in trazos:
-                trazo.id_produccion = nueva_orden.id_produccion
             db.commit()
             db.refresh(nueva_orden)
             return {
@@ -208,109 +177,6 @@ class ProduccionService:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     @staticmethod
-    def _validar_trazos_orden(data, insumos_receta, db: Session):
-        if not data.id_trazos:
-            return [], ProduccionRepository.obtener_ultimo_ingreso(db)
-
-        if len(set(data.id_trazos)) != len(data.id_trazos):
-            raise HTTPException(
-                status_code=422,
-                detail="No repitas el mismo identificador de trazo.",
-            )
-
-        trazos = ProduccionRepository.obtener_trazos_por_ids(
-            db,
-            data.id_trazos,
-            lock=True,
-        )
-        if len(trazos) != len(data.id_trazos):
-            raise HTTPException(
-                status_code=404,
-                detail="Uno o más trazos no existen.",
-            )
-
-        cantidades_esperadas = {}
-        for item in insumos_receta:
-            id_material = item.id_materiaPrima
-            cantidades_esperadas[id_material] = (
-                cantidades_esperadas.get(id_material, Decimal("0"))
-            + Decimal(str(item.cantidad_estimada))
-                * data.cantidad_a_producir
-            )
-
-        cantidades_trazadas = {}
-        ingresos = []
-        for trazo in trazos:
-            if trazo.id_produccion is not None:
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"El trazo {trazo.id_trazo} ya está asociado a una orden.",
-                )
-            if trazo.sku_prenda != data.sku_prenda:
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"El trazo {trazo.id_trazo} corresponde a otro SKU.",
-                )
-            if trazo.cantidad_prendas != data.cantidad_a_producir:
-                raise HTTPException(
-                    status_code=409,
-                    detail=(
-                        f"El trazo {trazo.id_trazo} fue preparado para "
-                        f"{trazo.cantidad_prendas} prendas, no para "
-                        f"{data.cantidad_a_producir}."
-                    ),
-                )
-
-            ingreso = ProduccionRepository.obtener_ingreso(db, trazo.id_ingreso)
-            if not ingreso:
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"El ingreso del trazo {trazo.id_trazo} ya no existe.",
-                )
-            id_material = ingreso.id_materiaPrima
-            cantidades_trazadas[id_material] = (
-                cantidades_trazadas.get(id_material, Decimal("0"))
-                + Decimal(trazo.cantidad_materia_prima)
-            )
-            ingresos.append(ingreso)
-
-        ids_materiales = set(cantidades_esperadas) | set(cantidades_trazadas)
-        for id_material in ids_materiales:
-            esperado = cantidades_esperadas.get(id_material, Decimal("0"))
-            trazado = cantidades_trazadas.get(id_material, Decimal("0"))
-            if abs(esperado - trazado) > Decimal("0.01"):
-                material = ProduccionRepository.obtener_materia_prima(
-                    db, id_material
-                )
-                nombre = material.nombre_material if material else str(id_material)
-                raise HTTPException(
-                    status_code=409,
-                    detail=(
-                        f"El trazo del material '{nombre}' suma {trazado}; "
-                        f"la ficha técnica requiere {esperado} para "
-                        f"{data.cantidad_a_producir} prendas."
-                    ),
-                )
-
-        return trazos, ingresos[0]
-
-    @staticmethod
-    def registrar_trazo(data, db: Session, id_usuario: int):
-        return TrazoService.registrar_trazo(data, db, id_usuario)
-
-    @staticmethod
-    def listar_trazos(db: Session):
-        return TrazoService.listar_trazos(db)
-
-    @staticmethod
-    def _serializar_trazo(trazo, id_material: int, nombre_material: str):
-        return TrazoService._serializar_trazo(
-            trazo,
-            id_material,
-            nombre_material,
-        )
-
-    @staticmethod
     def obtener_actividad_reciente(db: Session):
         return ProduccionService.listar_ordenes(db, limite=10)
 
@@ -328,9 +194,10 @@ class ProduccionService:
             for retraso in ProduccionRepository.obtener_retrasos_abiertos(db)
         }
         resultado = []
-        for orden in ProduccionRepository.obtener_ordenes(db, limite):
+        for orden, _nombre_producto in ProduccionRepository.obtener_ordenes(
+            db, limite
+        ):
             registro = trazabilidad.get(str(orden.id_produccion), {})
-            sku = registro.get("nombre_registro", "").split(": ", 1)
             try:
                 indice_etapa = ProduccionService.ETAPAS.index(
                     areas.get(orden.id_area, "")
@@ -352,7 +219,7 @@ class ProduccionService:
             )
             resultado.append({
                 "id_orden": orden.id_produccion,
-                "sku_prenda": sku[1] if len(sku) > 1 else "No especificado",
+                "sku_prenda": orden.sku_prenda,
                 "cantidad": orden.cantidad_recibida,
                 "cantidad_entregada": orden.cantidad_entregada or 0,
                 "area": areas.get(orden.id_area, f"Área {orden.id_area}"),

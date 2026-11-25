@@ -9,7 +9,6 @@ from backend.models.models import (
     FichaTecnicaInsumo,
     InventarioPrenda,
     MovimientoPrenda,
-    OrdenComercial,
     Produccion,
     ProductoComercial,
     Rol,
@@ -199,7 +198,7 @@ def _ensure_product_sku_foreign_keys(database_engine: Engine):
     inspector = inspect(database_engine)
     for table_name in (
         "ficha_tecnica_insumo",
-        "orden_comercial",
+        "detalle_venta",
         "inventario_prenda",
         "movimiento_prenda",
     ):
@@ -291,7 +290,6 @@ def initialize_database(
                 activo=1,
             ))
         for model in (
-            OrdenComercial,
             InventarioPrenda,
             MovimientoPrenda,
         ):

@@ -59,7 +59,7 @@ class ProductionSequenceApiTests(unittest.TestCase):
             db.flush()
             db.add_all((
                 IngresoInsumos(
-                    id_materiaPrima=material.id_materiaPrima,
+                    id_materia_prima=material.id_materia_prima,
                     cantidad_materia_prima=30,
                     proveedor="Proveedor API",
                     costo_unitario=Decimal("5.00"),
@@ -67,7 +67,7 @@ class ProductionSequenceApiTests(unittest.TestCase):
                 ),
                 FichaTecnicaInsumo(
                     sku_prenda=product.sku_prenda,
-                    id_materiaPrima=material.id_materiaPrima,
+                    id_materia_prima=material.id_materia_prima,
                     cantidad_estimada=Decimal("1.00"),
                 ),
             ))

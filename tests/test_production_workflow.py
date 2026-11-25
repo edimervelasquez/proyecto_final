@@ -20,7 +20,6 @@ from backend.models.models import (
     ProductoComercial,
     Produccion,
     Rol,
-    TrazoProduccion,
     Usuario,
 )
 from backend.schemas.calidad_schema import ControlCalidadCreate
@@ -34,7 +33,6 @@ from backend.schemas.comercial_schema import (
 from backend.schemas.produccion_schema import (
     OrdenProduccionCreate,
     RetrasoProduccionCreate,
-    TrazoProduccionCreate,
 )
 from backend.schemas.insumos_schema import DetalleInsumoFicha, FichaTecnicaCreate
 from backend.repositories.comercial_repository import ComercialRepository
@@ -75,7 +73,7 @@ class ProductionWorkflowTests(unittest.TestCase):
         self.db.flush()
 
         ingreso = IngresoInsumos(
-            id_materiaPrima=material.id_materiaPrima,
+            id_materia_prima=material.id_materia_prima,
             cantidad_materia_prima=100,
             proveedor="Proveedor de prueba",
             costo_unitario=Decimal("5.00"),
@@ -95,7 +93,7 @@ class ProductionWorkflowTests(unittest.TestCase):
         self.db.flush()
         self.db.add(FichaTecnicaInsumo(
             sku_prenda=product.sku_prenda,
-            id_materiaPrima=material.id_materiaPrima,
+            id_materia_prima=material.id_materia_prima,
             cantidad_estimada=Decimal("1.00"),
         ))
         self.db.commit()
@@ -117,7 +115,7 @@ class ProductionWorkflowTests(unittest.TestCase):
                 nombre_producto="Nueva prenda",
                 insumos=[
                     DetalleInsumoFicha(
-                        id_materiaPrima=1,
+                        id_materia_prima=1,
                         cantidad_estimada=1,
                     )
                 ],
@@ -132,7 +130,7 @@ class ProductionWorkflowTests(unittest.TestCase):
         ficha_line = self.db.query(FichaTecnicaInsumo).filter_by(
             sku_prenda="NEW-WORKFLOW-TEST"
         ).one()
-        self.assertEqual(ficha_line.id_materiaPrima, 1)
+        self.assertEqual(ficha_line.id_materia_prima, 1)
 
     def test_order_quality_inventory_transfer_and_sale(self):
         creation = ProduccionService.registrar_orden(
@@ -148,6 +146,14 @@ class ProductionWorkflowTests(unittest.TestCase):
             self.user_id,
         )
         order_id = creation["id_orden"]
+        order = self.db.query(Produccion).filter_by(
+            id_produccion=order_id
+        ).one()
+        self.assertEqual(order.sku_prenda, self.product_sku)
+        self.assertEqual(order.canal_destino, "DETAL")
+        self.assertEqual(order.costo_unitario_estimado, Decimal("7.00"))
+        listed_order = ProduccionService.listar_ordenes(self.db)[0]
+        self.assertEqual(listed_order["sku_prenda"], self.product_sku)
         material_movement = self.db.query(MovimientoInsumo).filter_by(
             id_produccion=order_id,
             tipo_movimiento="CONSUMO_PRODUCCION",
@@ -341,118 +347,6 @@ class ProductionWorkflowTests(unittest.TestCase):
                 require_production_lot=True,
             )
         self.assertEqual(missing_order.exception.status_code, 404)
-
-    def test_trace_uses_specific_receipt_and_is_linked_to_production_order(self):
-        trace = ProduccionService.registrar_trazo(
-            TrazoProduccionCreate(
-                id_ingreso=self.ingreso_id,
-                sku_prenda=self.product_sku,
-                cantidad_materia_prima=Decimal("10.00"),
-                cantidad_prendas=10,
-                observaciones="Tela reservada para este lote.",
-            ),
-            self.db,
-            self.user_id,
-        )
-        self.assertEqual(trace["id_ingreso"], self.ingreso_id)
-        self.assertEqual(trace["id_materiaPrima"], 1)
-        self.assertEqual(trace["sku_prenda"], self.product_sku)
-        self.assertIsNone(trace["id_produccion"])
-
-        order = ProduccionService.registrar_orden(
-            OrdenProduccionCreate(
-                id_area=self.areas[0].id_area,
-                sku_prenda=self.product_sku,
-                cantidad_a_producir=10,
-                fecha_entrega=date.today() + timedelta(days=5),
-                canal_destino="DETAL",
-                id_trazos=[trace["id_trazo"]],
-            ),
-            self.db,
-            self.user_id,
-        )
-
-        persisted_trace = self.db.query(TrazoProduccion).filter_by(
-            id_trazo=trace["id_trazo"]
-        ).one()
-        production_order = self.db.query(Produccion).filter_by(
-            id_produccion=order["id_orden"]
-        ).one()
-        movement = self.db.query(MovimientoInsumo).filter_by(
-            id_produccion=order["id_orden"],
-            tipo_movimiento="CONSUMO_PRODUCCION",
-        ).one()
-        self.assertEqual(persisted_trace.id_produccion, order["id_orden"])
-        self.assertEqual(production_order.id_ingreso_insumos, self.ingreso_id)
-        self.assertEqual(movement.cantidad, Decimal("-10.00"))
-
-    def test_trace_rejects_receipt_not_used_by_the_technical_sheet(self):
-        material = MateriaPrima(
-            nombre_material="Hilo alterno",
-            Cantidad_materiaPrima=20,
-        )
-        self.db.add(material)
-        self.db.flush()
-        unrelated_receipt = IngresoInsumos(
-            id_materiaPrima=material.id_materiaPrima,
-            cantidad_materia_prima=20,
-            proveedor="Alterno",
-            costo_unitario=Decimal("1.00"),
-            fecha_ingreso=date.today(),
-        )
-        self.db.add(unrelated_receipt)
-        self.db.commit()
-
-        with self.assertRaises(HTTPException) as invalid_material:
-            ProduccionService.registrar_trazo(
-                TrazoProduccionCreate(
-                    id_ingreso=unrelated_receipt.id_entrante,
-                    sku_prenda=self.product_sku,
-                    cantidad_materia_prima=Decimal("1.00"),
-                    cantidad_prendas=1,
-                ),
-                self.db,
-                self.user_id,
-            )
-        self.assertEqual(invalid_material.exception.status_code, 409)
-
-    def test_trace_must_match_recipe_and_reserves_stock_for_its_order(self):
-        with self.assertRaises(HTTPException) as wrong_quantity:
-            ProduccionService.registrar_trazo(
-                TrazoProduccionCreate(
-                    id_ingreso=self.ingreso_id,
-                    sku_prenda=self.product_sku,
-                    cantidad_materia_prima=Decimal("9.00"),
-                    cantidad_prendas=10,
-                ),
-                self.db,
-                self.user_id,
-            )
-        self.assertEqual(wrong_quantity.exception.status_code, 409)
-
-        ProduccionService.registrar_trazo(
-            TrazoProduccionCreate(
-                id_ingreso=self.ingreso_id,
-                sku_prenda=self.product_sku,
-                cantidad_materia_prima=Decimal("10.00"),
-                cantidad_prendas=10,
-            ),
-            self.db,
-            self.user_id,
-        )
-        with self.assertRaises(HTTPException) as reserved_stock:
-            ProduccionService.registrar_orden(
-                OrdenProduccionCreate(
-                    id_area=self.areas[0].id_area,
-                    sku_prenda=self.product_sku,
-                    cantidad_a_producir=95,
-                    fecha_entrega=date.today() + timedelta(days=5),
-                    canal_destino="DETAL",
-                ),
-                self.db,
-                self.user_id,
-            )
-        self.assertEqual(reserved_stock.exception.status_code, 400)
 
 
 if __name__ == "__main__":

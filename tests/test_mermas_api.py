@@ -10,8 +10,8 @@ from sqlalchemy.pool import StaticPool
 from backend.main import create_app
 from backend.models.models import (
     Merma,
-    Modelo,
     Produccion,
+    ProductoComercial,
     TipoMerma,
     Trazabilidad,
     Usuario,
@@ -45,11 +45,19 @@ class MermasApiTests(unittest.TestCase):
                 estado="ACTIVO",
             )
             tipo = TipoMerma(descripcion_merma="Tela sobrante")
-            modelo = Modelo(nombre_modelo="Modelo de prueba")
-            db.add_all((self.user, tipo, modelo))
+            producto = ProductoComercial(
+                sku_prenda="WASTE-TEST",
+                nombre_producto="Producto de prueba",
+                costo_mano_obra=Decimal("1.00"),
+                precio_mayorista=Decimal("10.00"),
+                precio_detal=Decimal("15.00"),
+            )
+            db.add_all((self.user, tipo, producto))
             db.flush()
             orden = Produccion(
-                id_modelo=modelo.id_modelo,
+                sku_prenda=producto.sku_prenda,
+                canal_destino="DETAL",
+                costo_unitario_estimado=Decimal("1.00"),
                 cantidad_recibida=20,
             )
             db.add(orden)

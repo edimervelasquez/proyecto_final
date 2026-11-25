@@ -13,7 +13,7 @@ class InsumosRepository:
     @staticmethod
     def obtener_materia_prima(db: Session, id_mp: int, lock: bool = False):
         query = db.query(MateriaPrima).filter(
-            MateriaPrima.id_materiaPrima == id_mp
+            MateriaPrima.id_materia_prima == id_mp
         )
         return query.with_for_update().first() if lock else query.first()
 
@@ -33,7 +33,9 @@ class InsumosRepository:
 
     @staticmethod
     def obtener_ultimo_costo(db: Session, id_mp: int):
-        return db.query(IngresoInsumos).filter_by(id_materiaPrima=id_mp).order_by(IngresoInsumos.id_entrante.desc()).first()
+        return db.query(IngresoInsumos).filter_by(
+            id_materia_prima=id_mp
+        ).order_by(IngresoInsumos.id_entrante.desc()).first()
 
     @staticmethod
     def obtener_costo_unitario_actual(db: Session, id_mp: int):
@@ -76,8 +78,8 @@ class InsumosRepository:
             )
             .join(
                 MateriaPrima,
-                MateriaPrima.id_materiaPrima
-                == MovimientoInsumo.id_materiaPrima,
+                MateriaPrima.id_materia_prima
+                == MovimientoInsumo.id_materia_prima,
             )
             .join(
                 Usuario,
@@ -112,7 +114,7 @@ class InsumosRepository:
     def guardar_linea_ficha(db: Session, sku: str, id_mp: int, cantidad: float):
         nueva_linea = FichaTecnicaInsumo(
             sku_prenda=sku,
-            id_materiaPrima=id_mp,
+            id_materia_prima=id_mp,
             cantidad_estimada=cantidad
         )
         db.add(nueva_linea)

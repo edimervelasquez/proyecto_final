@@ -26,6 +26,11 @@ const TablaEmpleados = ({
           </tr>
         </thead>
         <tbody>
+          {usuarios.length === 0 && (
+            <tr>
+              <td className="empty-table-message" colSpan="8">Aún no hay registros.</td>
+            </tr>
+          )}
           {usuarios.map((u) => (
             <tr key={u.id_usuario}>
               <td>{u.id_usuario}</td>

@@ -16,14 +16,14 @@ class InsumosService:
     @staticmethod
     def procesar_ingreso_insumo(data, db: Session, id_usuario: int):
         try:
-            if data.id_materiaPrima is not None and data.nombre_material:
+            if data.id_materia_prima is not None and data.nombre_material:
                 raise HTTPException(
                     status_code=400,
                     detail="Selecciona un insumo existente o ingresa el nombre de uno nuevo, no ambos.",
                 )
-            if data.id_materiaPrima is not None:
+            if data.id_materia_prima is not None:
                 material = InsumosRepository.obtener_materia_prima(
-                    db, data.id_materiaPrima, lock=True
+                    db, data.id_materia_prima, lock=True
                 )
                 if not material:
                     raise HTTPException(
@@ -56,7 +56,7 @@ class InsumosService:
                 db.flush()
 
             ingreso = InsumosRepository.registrar_ingreso(db, {
-                "id_materiaPrima": material.id_materiaPrima,
+                "id_materia_prima": material.id_materia_prima,
                 "cantidad_materia_prima": data.cantidad,
                 "proveedor": data.proveedor,
                 "costo_unitario": data.costo_unitario,
@@ -68,7 +68,7 @@ class InsumosService:
             )
             db.flush()
             InsumosRepository.registrar_movimiento(db, {
-                "id_materiaPrima": material.id_materiaPrima,
+                "id_materia_prima": material.id_materia_prima,
                 "tipo_movimiento": "ENTRADA",
                 "cantidad": data.cantidad,
                 "costo_unitario": data.costo_unitario or 0,
@@ -90,7 +90,7 @@ class InsumosService:
             return {
                 "mensaje": "Ingreso de materia prima registrado correctamente.",
                 "id_ingreso": ingreso.id_entrante,
-                "id_materiaPrima": material.id_materiaPrima,
+                "id_materiaPrima": material.id_materia_prima,
                 "nombre_material": material.nombre_material,
                 "nuevo_stock": float(material.Cantidad_materiaPrima),
             }
@@ -123,12 +123,12 @@ class InsumosService:
         materiales = []
         for insumo in data.insumos:
             material = InsumosRepository.obtener_materia_prima(
-                db, insumo.id_materiaPrima
+                db, insumo.id_materia_prima
             )
             if not material:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"No existe el insumo con ID {insumo.id_materiaPrima}.",
+                    detail=f"No existe el insumo con ID {insumo.id_materia_prima}.",
                 )
             materiales.append((insumo, material))
 
@@ -148,7 +148,7 @@ class InsumosService:
             detalles_guardados = []
             for insumo, material in materiales:
                 ultimo_ingreso = InsumosRepository.obtener_ultimo_costo(
-                    db, insumo.id_materiaPrima
+                    db, insumo.id_materia_prima
                 )
                 precio_unitario = (
                     float(ultimo_ingreso.costo_unitario)
@@ -160,11 +160,11 @@ class InsumosService:
                 InsumosRepository.guardar_linea_ficha(
                     db,
                     sku,
-                    insumo.id_materiaPrima,
+                    insumo.id_materia_prima,
                     insumo.cantidad_estimada,
                 )
                 detalles_guardados.append({
-                    "id_materiaPrima": insumo.id_materiaPrima,
+                    "id_materiaPrima": insumo.id_materia_prima,
                     "nombre_material": material.nombre_material,
                     "cantidad": float(insumo.cantidad_estimada),
                     "costo_estimado": costo_parcial,
@@ -201,7 +201,7 @@ class InsumosService:
     def listar_catalogo(db: Session):
         return [
             {
-                "id_materiaPrima": material.id_materiaPrima,
+                "id_materiaPrima": material.id_materia_prima,
                 "nombre_material": material.nombre_material,
                 "stock": material.Cantidad_materiaPrima,
                 "stock_minimo": material.stock_minimo or 0,
@@ -229,7 +229,7 @@ class InsumosService:
             db.commit()
             return {
                 "mensaje": "Stock mínimo actualizado correctamente.",
-                "id_materiaPrima": material.id_materiaPrima,
+                "id_materiaPrima": material.id_materia_prima,
                 "stock_minimo": float(material.stock_minimo or 0),
             }
         except HTTPException:
@@ -243,7 +243,7 @@ class InsumosService:
     def listar_alertas_stock(db: Session):
         return [
             {
-                "id_materiaPrima": material.id_materiaPrima,
+                "id_materiaPrima": material.id_materia_prima,
                 "nombre_material": material.nombre_material,
                 "stock": float(material.Cantidad_materiaPrima or 0),
                 "stock_minimo": float(material.stock_minimo or 0),
@@ -293,7 +293,7 @@ class InsumosService:
             db, "ingreso_insumo"
         )
         materiales = {
-            material.id_materiaPrima: material.nombre_material
+            material.id_materia_prima: material.nombre_material
             for material in InsumosRepository.obtener_materias_primas(db)
         }
         resultado = []
@@ -302,7 +302,7 @@ class InsumosService:
             resultado.append({
                 "id_ingreso": ingreso.id_entrante,
                 "insumo": materiales.get(
-                    ingreso.id_materiaPrima, "Insumo desconocido"
+                    ingreso.id_materia_prima, "Insumo desconocido"
                 ),
                 "cantidad": ingreso.cantidad_materia_prima,
                 "proveedor": ingreso.proveedor,
@@ -327,14 +327,14 @@ class InsumosService:
             db, "ficha_tecnica"
         )
         materiales = {
-            material.id_materiaPrima: material.nombre_material
+            material.id_materia_prima: material.nombre_material
             for material in InsumosRepository.obtener_materias_primas(db)
         }
         lineas_por_sku = {}
         for linea in InsumosRepository.obtener_lineas_ficha(db):
             lineas_por_sku.setdefault(linea.sku_prenda, []).append({
                 "insumo": materiales.get(
-                    linea.id_materiaPrima, "Insumo desconocido"
+                    linea.id_materia_prima, "Insumo desconocido"
                 ),
                 "cantidad_estimada": float(linea.cantidad_estimada),
             })

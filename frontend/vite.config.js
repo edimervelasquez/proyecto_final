@@ -5,4 +5,9 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   envDir: fileURLToPath(new URL('..', import.meta.url)),
   plugins: [react()],
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+  },
 })
